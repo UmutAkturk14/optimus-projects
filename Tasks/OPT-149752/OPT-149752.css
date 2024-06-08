@@ -1,0 +1,13 @@
+/* OPT-149752 START */
+.ins-preview-wrapper {
+    background-color: #004236;
+    color: #FFFFFF;
+}
+
+.ins-preview-wrapper .ins-content-wrapper {
+    width: 100%;
+    max-width: 1260px;
+    margin: 0 auto;
+    padding: 0 calc(1rem - 14px);
+}
+/* OPT-149752 END */

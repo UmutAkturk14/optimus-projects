@@ -1,0 +1,52 @@
+/* OPT-150118 START */
+((self) => {
+    'use strict';
+
+    const builderId = 634;
+    const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
+    const deliveryTypeStorage = `ins-delivery-type-${ variationId }`;
+    const deliveryTypes = {
+        homeDelivery: 'Home Delivery',
+        clickCollect: 'Click & Collect'
+    };
+
+    self.init = () => {
+        if (variationId) {
+            if (!Insider.campaign.isControlGroup(variationId)) {
+                if (Insider.fns.hasParameter('checkout')) {
+                    self.setDelivery();
+                } else if (Insider.systemRules.call('isOnAfterPaymentPage')) {
+                    self.sendGoals();
+                }
+            }
+
+            return true;
+        }
+    };
+
+    self.setDelivery = () => {
+        Insider.utils.opt.ajaxListener((url, _, method) => {
+            if (method === 'GET' && url.includes('payment-methods')) {
+                Insider.storage.localStorage.set({
+                    name: deliveryTypeStorage,
+                    value: Insider.dom('.view-address__title').text() === deliveryTypes.homeDelivery
+                        ? deliveryTypes.homeDelivery
+                        : deliveryTypes.clickCollect
+                });
+            }
+        });
+    };
+
+    self.sendGoals = () => {
+        if (Insider.storage.localStorage.get(deliveryTypeStorage)) {
+            const goalId = Insider.storage.localStorage.get(deliveryTypeStorage) === deliveryTypes.homeDelivery
+                ? 103
+                : 110;
+
+            Insider.utils.opt.sendCustomGoal(builderId, goalId, true);
+        }
+    };
+
+    return self.init();
+})({});
+/* OPT-150118 END */
