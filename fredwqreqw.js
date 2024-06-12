@@ -1,128 +1,95 @@
-// Get the screen dimensions
-const screenWidth = $(window).width();
-const screenHeight = $(window).height();
+/* OPT-162044 START */
+((self) => {
+    'use strict';
 
-// Calculate the card dimensions
-const cardWidth = screenWidth * 1;
-const cardHeight = screenHeight * 0.5;
+    const builderId = Insider.browser.isDesktop() ? 411 : 412;
+    const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
+    const clickCollectGoalId = 102;
 
-// Create the pages
-const pages = [];
+    const config = {
+        targetPurchaseTypeContainerText: 'Order Summary',
+        targetPurchaseTypeText: 'Click & Collect',
+        placeOrderButtonText: 'place order',
+        newText: 'for FREE CLICK & COLLECT In store & Online'
+    };
 
-// Create the config
-const config = {
-    question1: {
-        title: 'Question 1',
-        images: ['https://example.com/image1', 'https://example.com/image2']
-    },
-    question2: {
-        title: 'Question 2',
-        images: ['https://example.com/image3', 'https://example.com/image4']
-    },
-    question3: {
-        title: 'Question 3',
-        images: ['https://example.com/image5', 'https://example.com/image6']
-    },
-    question4: {
-        title: 'Question 4',
-        images: ['https://example.com/image7', 'https://example.com/image8']
-    },
-    question5: {
-        title: 'Question 5',
-        images: ['https://example.com/image9', 'https://example.com/image10']
-    }
-};
+    const classes = {
+        goal: `sp-custom-${ variationId }-1`,
+    };
 
-// Create the pages
-for (var i = 0; i < Object.keys(config).length; i++) {
-    const page = $('<div class="lead-collection">').attr({
-        class: 'page',
-        style: `position: absolute; top: 0; left: ${ i * 100 }vw; width: ${ cardWidth }px; height: ${ cardHeight }px; background-color: #fff; text-align: center; padding: 20px; font-size: 24px; font-weight: bold; color: #333; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0.2);`
-    }).html(`<h2>${ config[Object.keys(config)[i].title] }</h2>`);
+    const { targetPurchaseTypeContainerText, targetPurchaseTypeText } = config;
 
-    // Add the CSS to center the cards within each slide
-    page.addClass('centered');
+    const selectors = {
+        purchaseTypeSelector: `h2:contains(${ targetPurchaseTypeContainerText }) + div span:contains(${ targetPurchaseTypeText })`,
+        placeOrderButtonSelector: '.gdiUC.button-root',
+        textSelector: 'span:contains(In Store & Online)',
+        newTextSelector: 'span:contains(for FREE CLICK & COLLECT In store & Online)',
+    };
 
-    pages.push(page);
-}
+    self.init = () => {
+        const { newText } = config;
+        const { textSelector, newTextSelector } = selectors;
+        const { goal } = classes;
 
-// Append the pages to the page
-$(document.body).append(pages);
+        if (variationId) {
+            if (Insider.fns.hasParameter('/checkout')) {
+                self.setPurchaseType();
+            }
 
-// Center the pages vertically
-for (var i = 0; i < pages.length; i++) {
-    pages[i].css({
-        top: `${ (screenHeight - cardHeight) / 2 }px`
-    });
-}
+            if (Insider.systemRules.call('isOnAfterPaymentPage')) {
+                self.checkGoal();
+            }
 
-// Create the navigation buttons
-const leftButton = $('<button>').attr({
-    class: 'left-button',
-    style: 'position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: 24px; font-weight: bold; color: #333; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0.2);'
-}).html('&lt;');
+            if (Insider.systemRules.call('isOnProductPage')) {
+                if (Insider.dom(newTextSelector).text() === newText) {
+                    Insider.campaign.custom.show(variationId);
+                } else {
+                    self.reset();
+                    Insider.fns.onElementLoaded(textSelector, () => {
+                        if (!Insider.campaign.isControlGroup(variationId)) {
+                            Insider.dom(textSelector).text(newText).addClass(goal);
+                        }
 
-const rightButton = $('<button>').attr({
-    class: 'right-button',
-    style: 'position: absolute; top: 50%; right: 10px; transform: translateY(-50%); font-size: 24px; font-weight: bold; color: #333; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0.2);'
-}).html('&gt;');
-
-$(document.body).append(leftButton);
-$(document.body).append(rightButton);
-
-// Add the CSS for centered cards
-$('.centered').css({
-    'display': 'flex',
-    'justify-content': 'center',
-    'align-items': 'center'
-});
-
-// Set the initial left position for each card
-for (var i = 0; i < pages.length; i++) {
-    pages[i].css({
-        left: `${ i * 100 }vw`
-    });
-}
-
-// Set the initial page
-let currentPage = 0;
-
-// Handle navigation
-let leftButtonClicked = false;
-let rightButtonClicked = false;
-
-leftButton.on('click', function () {
-    if (!leftButtonClicked) {
-        leftButtonClicked = true;
-
-        if (currentPage > 0) {
-            currentPage--;
-            pages.forEach(function (page, index) {
-                page.animate({
-                    left: `+=${ 100 }vw`
-                }, 500);
-            });
+                        Insider.campaign.custom.show(variationId);
+                    }).listen();
+                }
+            }
         }
-        setTimeout(function () {
-            leftButtonClicked = false;
-        }, 500);
-    }
-});
+    };
 
-rightButton.on('click', function () {
-    if (!rightButtonClicked) {
-        rightButtonClicked = true;
+    self.setPurchaseType = () => {
+        const { placeOrderButtonSelector, purchaseTypeSelector } = selectors;
 
-        if (currentPage < pages.length - 1) {
-            currentPage++;
-            pages.forEach(function (page, index) {
-                page.animate({
-                    left: `-=${ 100 }vw`
-                }, 500);
+        Insider.eventManager.once(`click.place:order:button:${ variationId }`,
+            placeOrderButtonSelector, () => {
+                const storageName = 'ins-purchase-type-162044';
+                let storageValue = false;
+
+                if (Insider.dom(purchaseTypeSelector).exists()) {
+                    storageValue = true;
+                }
+
+                Insider.storage.localStorage.set({
+                    name: storageName,
+                    value: storageValue,
+                    expires: Insider.dateHelper.ONE_MONTH_AS_DAYS,
+                });
             });
+    };
+
+    self.checkGoal = () => {
+        if (Insider.storage.localStorage.get('ins-purchase-type-161914')) {
+            Insider.utils.opt.sendCustomGoal(builderId, clickCollectGoalId, true);
         }
-        setTimeout(function () {
-            rightButtonClicked = false;
-        }, 500);
-    }
-});
+    };
+
+    self.reset = () => {
+        const { textSelector } = selectors;
+        const { goal } = classes;
+
+        Insider.dom(textSelector)?.removeClass(goal);
+    };
+
+    self.init();
+})({});
+/* OPT-162044 END */
