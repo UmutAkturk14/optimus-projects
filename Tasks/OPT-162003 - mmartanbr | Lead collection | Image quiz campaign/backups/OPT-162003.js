@@ -1,4 +1,5 @@
 Insider.dom('.lead-collection, .page.centered').remove();
+Insider.dom('#ins-frameless-overlay').css('z-index', '-1', 'important');
 
 // Get the screen dimensions
 const screenWidth = $(window).width();
@@ -23,15 +24,32 @@ for (var i = 0; i < 5; i++) {
     pages.push(page);
 }
 
-// Append the pages to the page
-$(document.body).append(pages);
+// Wrap the pages in a pagesWrapper
+const pagesWrapper = $('<div>').addClass('pagesWrapper');
 
-// Center the pages vertically
-for (var i = 0; i < pages.length; i++) {
-    pages[i].css({
-        top: `${ (screenHeight - cardHeight) / 2 }px`
-    });
-}
+pages.forEach(function (page) {
+    pagesWrapper.append(page);
+});
+
+// Append the pagesWrapper to the body
+$(document.body).append(pagesWrapper);
+
+// Center the pagesWrapper vertically
+pagesWrapper.css({
+    top: `${ (screenHeight - cardHeight) / 2 }px`,
+    left: '50%'
+});
+
+// Center the pagesWrapper horizontally
+pagesWrapper.css({
+    height: '50vh',
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    right: '0',
+    bottom: '0',
+    margin: 'auto'
+});
 
 // Create the navigation buttons
 const leftButton = $('<button>').attr({
@@ -54,6 +72,7 @@ $('.centered').css({
     'align-items': 'center'
 });
 
+// Set the initial left position for each card
 // Set the initial left position for each card
 for (var i = 0; i < pages.length; i++) {
     pages[i].css({
@@ -82,6 +101,7 @@ leftButton.on('click', function () {
         }
         setTimeout(function () {
             leftButtonClicked = false;
+            currentPage = Math.max(0, currentPage); // Ensure currentPage is not negative
         }, 500);
     }
 });
@@ -100,6 +120,7 @@ rightButton.on('click', function () {
         }
         setTimeout(function () {
             rightButtonClicked = false;
+            currentPage = Math.min(currentPage, pages.length - 1); // Ensure currentPage is within bounds
         }, 500);
     }
 });
