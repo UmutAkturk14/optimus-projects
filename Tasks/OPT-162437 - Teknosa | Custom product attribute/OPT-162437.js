@@ -1,1 +1,1 @@
-Insider.dom('.product-info-discount:first').text(); /* OPT-162437 */
+Insider.dom('.product-info-discount:first').text().trim().replace('-', ''); /* OPT-162437 */

@@ -1150,57 +1150,58 @@ const questionConfig = {
 };
 
 const createQuestions = () => {
-  Insider.fns.keys(questionConfig).forEach((questionId) => {
-      const { questionInnerWrapper, header, selectionWrapper,  } = classes;
-      const { questionWrapper } = selectors;
+    Insider.fns.keys(questionConfig).forEach((questionId) => {
+        const { questionInnerWrapper, header, selectionWrapper } = classes;
+        const { questionWrapper } = selectors;
 
-      Insider.dom(`${ previewWrapper } [data-question-id=${ questionId }]`).remove();
-      const questionHtml = `
-          <div data-question-id=${ questionId } class="${ questionInnerWrapper }">
-              <div class="${ header }">${ questionConfig[questionId].question }</div>
-              <div class="${ selectionWrapper }">
-                  ${ getSelectionsHtml(questionConfig[questionId].selections) }
-              </div>
-          </div>
-      `;
+        Insider.dom(`${ previewWrapper } [data-question-id=${ questionId }]`).remove();
+        const questionHtml = `
+            <div data-question-id=${ questionId } class="${ questionInnerWrapper }">
+                <div class="${ header }">${ questionConfig[questionId].question }</div>
+                <div class="${ selectionWrapper }">
+                    ${ getSelectionsHtml(questionConfig[questionId].selections) }
+                </div>
+            </div>
+        `;
 
-      Insider.dom(questionWrapper).append(questionHtml);
-  });
+        Insider.dom(questionWrapper).append(questionHtml);
+    });
 };
 
 const getSelectionsHtml = (selections) => {
-  let html = '';
+    let html = '';
 
-  selections.forEach((selection, index) => {
-      const { selection: selectionClass, image: imageClass, text: textClass } = classes;
-      const { image, text } = selection;
+    selections.forEach((selection, index) => {
+        const { selection: selectionClass, image: imageClass, text: textClass } = classes;
+        const { image, text } = selection;
 
-      html += `
-          <div class="${selectionClass}">
-              <img class="${imageClass}" src="${image}" image-position="${index + 1}"></img>
-              <div class="${textClass}">${text}</div>
-          </div>
-      `;
-  });
+        html += `
+            <div class="${ selectionClass }">
+                <img class="${ imageClass }" src="${ image }" image-position="${ index + 1 }"></img>
+                <div class="${ textClass }">${ text }</div>
+            </div>
+        `;
+    });
 
-  return html;
+    return html;
 };
 
 const slideQuestions = () => {
-  Insider.eventManager.once(`click.select:answeewqewqr:${ camp.id }`, selectors.selectionAnswer, (event) => {
-      const imagePosition = Insider.dom(event.target).attr('image-position');
-      const questionId = Insider.dom(event.currentTarget).parents('.ins-question-inner-wrapper').attr('data-question-id');
+    const { selectionAnswer, questionWrapper } = selectors;
 
+    Insider.eventManager.once(`click.select:answeewqewqr:${ camp.id }`, selectionAnswer, (event) => {
+        const imagePosition = Insider.dom(event.target).attr('image-position');
+        const questionId = Insider.dom(event.currentTarget).parents('.ins-question-inner-wrapper').attr('data-question-id');
 
-      Insider.storage.update({
-          name: 'ins-selected-answers-162003',
-          value: {
-              [`question-${ Number(questionId) + 1 }`]: Number(imagePosition)
-          }
-      });
+        Insider.storage.update({
+            name: 'ins-selected-answers-162003',
+            value: {
+                [`question-${ Number(questionId) + 1 }`]: Number(imagePosition)
+            }
+        });
 
-      Insider.dom(selectors.questionWrapper).css('transform', `translate(-${ (Number(questionId) + 1) * 20 }%)`);
-  });
+        Insider.dom(questionWrapper).css('transform', `translate(-${ (Number(questionId) + 1) * 20 }%)`);
+    });
 };
 /* OPT-162003 END */
 
