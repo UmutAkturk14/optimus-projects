@@ -93,7 +93,7 @@
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
-        appendLocationProduct: isDesktop ? '.code' : '.highlights',
+        appendLocationProduct: isDesktop ? '.pd-info__sku' : '.first-image img', /* worksheet */
         appendLocationCategory: '.list__item.js-product-wrapper',
         addToCart: '[data-an-tr="add-to-cart"]',
         viewMore: '.btn-load-more',
@@ -170,44 +170,44 @@
         const { wrapper, container, categoryProduct, moveFromTop } = selectors;
 
         const customStyle =
-        `${ wrapper } {
-            display: flex;
-            padding: 10px;
-            background-color: #DEE1FE;
-            border-radius: 20px;
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-        ${ container } {
-            display: flex;
-            flex-direction: column;
-        }
-        ${ container } h1 {
-            font-size: 12px;
-            font-weight: bold;
-        }
-        ${ container } span {
-            font-size: 10px;
-        }
-        ${ categoryProduct } {
-            border-top-right-radius: 20px !important;
-            border-top-left-radius: 20px !important;
-            border-bottom-left-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
-            margin-bottom: 0 !important;
-            left: -16px;
-            position: relative;
-            width: calc(100% + 32px);
-        }
-        ${ moveFromTop } {
-            top: 110px !important;
-        }
-        @media screen and (max-width: 500px) {
-            ${ wrapper } {
-                margin-top: 10px;
-                margin-bottom: 0px;
-            }
-        }`;
+      `${ wrapper } {
+          display: flex;
+          padding: 10px;
+          background-color: #DEE1FE;
+          border-radius: 20px;
+          margin-top: 0;
+          margin-bottom: 20px;
+      }
+      ${ container } {
+          display: flex;
+          flex-direction: column;
+      }
+      ${ container } h1 {
+          font-size: 12px;
+          font-weight: bold;
+      }
+      ${ container } span {
+          font-size: 10px;
+      }
+      ${ categoryProduct } {
+          border-top-right-radius: 20px !important;
+          border-top-left-radius: 20px !important;
+          border-bottom-left-radius: 0 !important;
+          border-bottom-right-radius: 0 !important;
+          margin-bottom: 0 !important;
+          left: -16px;
+          position: relative;
+          width: calc(100% + 32px);
+      }
+      ${ moveFromTop } {
+          top: 110px !important;
+      }
+      @media screen and (max-width: 500px) {
+          ${ wrapper } {
+              margin-top: 10px;
+              margin-bottom: 0px;
+          }
+      }`;
 
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
     };
@@ -220,12 +220,12 @@
         const { deliveryText, giftIdAttribute, bonusAmountAttribute } = config;
 
         const outerHtml =
-        `<div class="${ wrapper } ${ goal }">
-            <div class="${ container }" ${ giftIdAttribute }="${ giftSku }" ${ bonusAmountAttribute }="${ bonusAmount ?? '' }">
-                <h1>${ paraCardText ?? '' }</h1>
-                <span>${ deliveryText }</span>
-            </div>
-        </div>`;
+      `<div class="${ wrapper } ${ goal }">
+          <div class="${ container }" ${ giftIdAttribute }="${ giftSku }" ${ bonusAmountAttribute }="${ bonusAmount ?? '' }">
+              <h1>${ paraCardText ?? '' }</h1>
+              <span>${ deliveryText }</span>
+          </div>
+      </div>`;
 
         $appendElement[insertAction](outerHtml);
 
