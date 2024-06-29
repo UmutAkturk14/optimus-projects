@@ -8,8 +8,6 @@
     const isOfferPage = Insider.fns.hasParameter('/offer');
     const isCategoryPage = Insider.systemRules.call('isOnCategoryPage');
     const isProductPage = Insider.systemRules.call('isOnProductPage');
-    const isControlGroup = Insider.campaign.isControlGroup(variationId);
-
     const classes = {
         badge: `ins-badge-${ variationId }`,
         join: `sp-custom-${ variationId }-1`,
@@ -20,7 +18,6 @@
         modelData: 'data-modelcode',
         positionRelative: `ins-element-position-relative-${ variationId }`
     };
-
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
@@ -32,7 +29,6 @@
         offerPageProduct: '.cmp-prd-card_item',
         offerPageProductLink: '.cmp-prd-card_item-thbnail'
     });
-
     const config = {
         'QE98QN90DATXTK': {
             giftProduct: 'HW-Q990D/TK',
@@ -113,18 +109,57 @@
         'HW-LS60D/TK': {
             giftProduct: '',
             paraCardAmount: '1,000'
+        },
+        // Testing...
+        'UE65DU7000UXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '4,500'
+        },
+        'UE65DU7200UXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '6,500'
+        },
+        'QE65Q80DATXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '7,500'
+        },
+        'SM-S928BZTQTUR': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE65Q60DAUXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '5,000'
+        },
+        'UE65CU8100UXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '5,000'
         }
+        // Testing...
     };
 
     self.init = () => {
         if (variationId) {
-            self.reset();
-            self.buildCSS();
-            self.buildHTML();
-            self.addClass();
+            const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
+            const productPageProduct = config[currentProductId];
+
+            if (isCategoryPage) {
+                self.handleAjaxElements('category');
+            } else if (isProductPage && productPageProduct) {
+                self.handleAjaxElements('product');
+            } else if (isOfferPage) {
+                self.handleAjaxElements('offer');
+            }
         }
     };
-
+    self.showCampaign = () => {
+        if (!Insider.campaign.isControlGroup(variationId)) {
+            self.reset();
+            self.buildCSS();
+            self.addClass();
+        }
+        Insider.campaign.custom.show(variationId);
+    };
     self.reset = () => {
         const { style, wrapper, positionRelative: positionRelativeSelector } = selectors;
         const { positionRelative } = classes;
@@ -132,7 +167,6 @@
         Insider.dom(`${ style }, ${ wrapper }`).remove();
         Insider.dom(positionRelativeSelector).removeClass(positionRelative);
     };
-
     self.buildCSS = () => {
         const { wrapper, header, notice, positionRelative } = selectors;
         let customStyle = `
@@ -152,7 +186,6 @@
                 border-radius: 25vh 25vh 0 0;
             }
         }`;
-
         const wrapperBaseStyle = `
             display: flex;
             flex-direction: column;
@@ -215,81 +248,46 @@
                 margin: 0px 10px !important;
             }`;
         }
-
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
     };
-
-    self.buildHTML = () => {
-        const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
-        const productPageProduct = config[currentProductId];
-
-        if (isCategoryPage) {
-            self.handleAjaxElements('category');
-        } else if (isProductPage && productPageProduct) {
-            self.handleAjaxElements('product');
-        } else if (isOfferPage) {
-            self.handleAjaxElements('offer');
-        }
-    };
-
     self.addClass = () => {
         if (isOfferPage) {
             const { offerPageProduct, offerPageProductLink } = selectors;
             const { positionRelative } = classes;
 
-            const addDisplayClass = () => {
-                Insider.fns.onElementLoaded(offerPageProduct, () => {
-                    Insider.dom(offerPageProduct).accessNodes((node) => {
-                        const $node = Insider.dom(node);
-                        const productId = $node.find(offerPageProductLink).attr('title');
+            Insider.fns.onElementLoaded(offerPageProduct, () => {
+                Insider.dom(offerPageProduct).accessNodes((node) => {
+                    const $node = Insider.dom(node);
+                    const productId = $node.find(offerPageProductLink).attr('title');
 
-                        if (config[productId]) {
-                            $node.addClass(positionRelative);
-                        }
-                    });
-                }).listen();
-            };
-
-            addDisplayClass();
-
-            Insider.utils.opt.ajaxListener((url, response, method) => {
-                if (method === 'GET' && url.includes('searchapi.samsung.com/')) {
-                    setTimeout(() => {
-                        addDisplayClass();
-                    }, 500);
-                }
-            });
+                    if (config[productId]) {
+                        $node.addClass(positionRelative);
+                    }
+                });
+            }).listen();
         }
     };
-
     self.appendHtml = (location, price, position = 'after') => {
         const { wrapper, header, notice, join, } = classes;
-
         const htmlTemplate = (productPrice) => `
         <div class="${ wrapper } ${ join }">
             <p class="${ header }">Buy now and get ${ productPrice } TL Para Card Amount</p>
             <p class="${ notice }">Para card amount will be delivered after 14 days</p>
         </div>`;
-
         const html = htmlTemplate(price);
 
-        if (!isControlGroup) {
-            Insider.dom(location)[position](html);
-        }
-
+        Insider.dom(location)[position](html);
         Insider.campaign.custom.show(variationId);
     };
-
     self.handleAjaxElements = (page) => {
         const { modelData } = classes;
         const { categoryPageProducts, categoryPageProductTitle, productPageProductId, productPageImage,
             offerPageProduct, offerPageProductLink, wrapper } = selectors;
         const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
         const productPageProduct = config[currentProductId];
-
+        let isProducExists = false;
         const handleCategoryPage = () => {
             Insider.dom(wrapper).remove();
-
             Insider.fns.onElementLoaded(categoryPageProducts, () => {
                 Insider.dom(categoryPageProducts).accessNodes((node) => {
                     const $node = Insider.dom(node).find(categoryPageProductTitle);
@@ -301,34 +299,33 @@
                         const price = product.paraCardAmount;
                         const method = isDesktop ? 'after' : 'prepend';
 
+                        isProducExists = true;
                         self.appendHtml(isDesktop ? $productOptions : node, price, method);
                     }
                 });
             }).listen();
         };
-
         const handleProductPage = () => {
             Insider.dom(wrapper).remove();
-
             const price = productPageProduct.paraCardAmount;
             const appendLocation = isDesktop ? productPageProductId : productPageImage;
             const method = isDesktop ? 'after' : 'before';
 
+            isProducExists = true;
             self.appendHtml(appendLocation, price, method);
         };
-
         const handleOfferPage = () => {
             Insider.fns.onElementLoaded(offerPageProduct, () => {
                 Insider.dom(offerPageProduct).accessNodes((node) => {
                     const productId = Insider.dom(node).find(offerPageProductLink).attr('title');
 
                     if (config[productId]) {
+                        isProducExists = true;
                         self.appendHtml(node, config[productId].paraCardAmount, 'prepend');
                     }
                 });
             }).listen();
         };
-
         const handleAjaxRequest = (func) => {
             func();
             Insider.utils.opt.ajaxListener((url, response, method) => {
@@ -347,14 +344,12 @@
         } else if (page === 'offer') {
             handleAjaxRequest(handleOfferPage);
         }
+
+        if (isProducExists) {
+            self.showCampaign(products);
+        }
     };
 
     return self.init();
 })({});
 /* OPT-162992 END */
-
-// Insider.dom('.summary-total__btn.summary-total__btn--link.link.ng-star-inserted').click();
-// Insider.dom('.modal').css('background-color', 'unset');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted').css('display', 'none');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted input').val('yo');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted button[type="submit"]').click();

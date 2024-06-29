@@ -1,163 +1,144 @@
-/* OPT-161221 START */
+/* OPT-162992 START */
 ((self) => {
     'use strict';
 
     const isDesktop = Insider.browser.isDesktop();
     const builderId = isDesktop ? 3525 : 3526;
-    const smartRecommenderBuilderId = isDesktop ? 3547 : 3548;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
-    const isCategoryPage = Insider.systemRules.call('isOnCategoryPage');
-
-    const skuGroups = {
-        neo8k: {
-            products: [
-                'QE98QN90DATXTK',
-                'QE85QN900DTXTK',
-                'QE75QN900DTXTK',
-                'QE75QN800DTXTK',
-                'QE65QN800DTXTK',
-            ],
-            bonusAmount: '15,000 TL',
-            paraCardHeadText: 'Buy now and get free sound bar or 15,000 TL Paracard Amount',
-            giftSku: 'HW-Q990D/TK'
-        },
-        oled: {
-            products: [
-                'QE77S95DATXTK',
-                'QE65S95DATXTK',
-            ],
-            bonusAmount: '8,000 TL',
-            paraCardText: 'Buy now and get free sound bar or 8,000 TL Paracard Amount',
-            giftSku: 'HW-Q990D/TK' /* 'HW-Q800D/TK' Product is missing */
-        },
-        neoQled4k: {
-            products: [
-                'QE85QN90DATXTK',
-                'QE75QN90DATXTK',
-                'QE65QN90DATXTK',
-                'QE55QN90DATXTK',
-                'QE85QN85DBTXTK',
-                'QE75QN85DBTXTK',
-                'QE65QN85DBTXTK',
-                'QE55QN85DBTXTK',
-            ],
-            bonusAmount: '5,000 TL',
-            paraCardText: 'Buy now and get free sound bar or 5,000 TL Paracard Amount',
-            giftSku: 'HW-Q600C/TK'
-        },
-        theFrame: {
-            products: [
-                'QE75LS03DAUXTK',
-                'QE65LS03DAUXTK',
-                'QE55LS03DAUXTK',
-            ],
-            bonusAmount: '4,500 TL',
-            paraCardText: 'Buy now and get free sound bar or 4,500 TL Paracard Amount',
-            giftSku: 'HW-LS60D/TK'
-        },
-        soundbarModelQ: {
-            products: [
-                'HW-Q990D/TK',
-            ],
-            bonusAmount: '2,500 TL',
-            paraCardText: 'Buy now and get free sound bar or 2,500 TL Paracard Amount',
-            giftSku: ''
-        },
-        soundbarModelL: {
-            products: [
-                'HW-LS60D/TK',
-            ],
-            bonusAmount: '1,000 TL',
-            paraCardText: 'Buy now and get free sound bar or 1,000 TL Paracard Amount',
-            giftSku: ''
-        },
-    };
-
-    const config = {
-        headText: 'Buy now and get free sound bar or 15,000 TL Paracard Amount',
-        deliveryText: '*Para Card amount will be deliver after 14 Days',
-        skuAttribute: 'data-modelcode',
-        giftIdAttribute: `data-ins-gift-id-${ variationId }`,
-        bonusAmountAttribute: `data-ins-bonus-amount-${ variationId }`
-    };
 
     const classes = {
+        badge: `ins-badge-${ variationId }`,
+        join: `sp-custom-${ variationId }-1`,
         style: `ins-custom-style-${ variationId }`,
         wrapper: `ins-custom-wrapper-${ variationId }`,
-        container: `ins-custom-container-${ variationId }`,
-        categoryProduct: `ins-category-product-${ variationId }`,
-        moveFromTop: `ins-move-from-top-${ variationId }`,
-        goal: `sp-custom-${ variationId }-1`,
+        header: `ins-custom-text-header-${ variationId }`,
+        notice: `ins-custom-text-notice-${ variationId }`,
+        modelData: 'data-modelcode'
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
-        appendLocationProduct: isDesktop ? '.code' : '.highlights',
-        appendLocationCategory: '.list__item.js-product-wrapper',
-        addToCart: '[data-an-tr="add-to-cart"]',
-        viewMore: '.btn-load-more',
-        badgeContainer: '.guarantee-badge-container',
-        categoryAddToCart: '.list__item-btn.js-variant-link',
-        popUp: '.basket-item-added.opened'
+        categoryPageAppendLocation: '.option-selector-v2__swiper-container',
+        categoryPageProducts: '.pd03-product-finder__content-item.pd03-product-finder__content-item-view.js-pfv2-product-card',
+        categoryPageProductTitle: '.pd03-product-card__product-name a',
+        productPageProductId: '.pd-info__sku',
+        productPageImage: '.first-image',
+        offerPageProduct: '.cmp-prd-card_item',
+        offerPageProductLink: '.cmp-prd-card_item-thbnail'
     });
 
-    self.buildCampaign = () => {
-        const { giftGroups, appendLocationElements, insertAction } = self.getAppendElementsWithGroups();
+    const config = {
+        'QE98QN90DATXTK': {
+            giftProduct: 'HW-Q990D/TK',
+            paraCardAmount: '15,000'
+        },
+        'QE85QN900DTXTK': {
+            giftProduct: 'HW-Q990D/TK',
+            paraCardAmount: '15,000'
+        },
+        'QE75QN900DTXTK': {
+            giftProduct: 'HW-Q990D/TK',
+            paraCardAmount: '15,000'
+        },
+        'QE75QN800DTXTK': {
+            giftProduct: 'HW-Q990D/TK',
+            paraCardAmount: '15,000'
+        },
+        'QE65QN800DTXTK': {
+            giftProduct: 'HW-Q990D/TK',
+            paraCardAmount: '15,000'
+        },
+        'QE77S95DATXTK': {
+            giftProduct: 'HW-Q800D/TK',
+            paraCardAmount: '8,000'
+        },
+        'QE65S95DATXTK': {
+            giftProduct: 'HW-Q800D/TK',
+            paraCardAmount: '8,000'
+        },
+        'QE85QN90DATXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE75QN90DATXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE65QN90DATXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE55QN90DATXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE85QN85DBTXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE75QN85DBTXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE65QN85DBTXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE55QN85DBTXTK': {
+            giftProduct: 'HW-Q600C/TK',
+            paraCardAmount: '5,000'
+        },
+        'QE75LS03DAUXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '4,500'
+        },
+        'QE65LS03DAUXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '4,500'
+        },
+        'QE55LS03DAUXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '4,500'
+        },
+        'HW-Q990D/TK': {
+            giftProduct: '',
+            paraCardAmount: '2,500'
+        },
+        'HW-LS60D/TK': {
+            giftProduct: '',
+            paraCardAmount: '1,000'
+        },
+        // Testing...
+        'UE65DU7000UXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '4,500'
+        },
+        'UE65DU7200UXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '6,500'
+        },
+        'QE65Q80DATXTK': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '7,500'
+        },
+        'SM-S928BZTQTUR': {
+            giftProduct: 'HW-LS60D/TK',
+            paraCardAmount: '5,000'
+        }
+        // Testing...
+    };
 
-        if (variationId && giftGroups.length) {
+    self.init = () => {
+        if (variationId) {
             if (!Insider.campaign.isControlGroup(variationId)) {
                 self.reset();
                 self.buildCSS();
-
-                giftGroups.forEach((giftGroup, index) => {
-                    self.buildHTML(giftGroup, appendLocationElements[index], insertAction);
-                });
-
-                self.setEvents();
+                self.buildHTML();
             }
 
             return true;
         }
-    };
-
-    self.getAppendElementsWithGroups = () => {
-        const { appendLocationCategory, addToCart, appendLocationProduct } = selectors;
-        let giftGroups = [];
-        let appendLocationElements = [];
-        let insertAction = 'prepend';
-
-        if (isCategoryPage) {
-            Insider.dom(appendLocationCategory).accessNodes((product) => {
-                const $product = Insider.dom(product);
-                const elementSku = $product.attr(config.skuAttribute);
-
-                Insider.fns.objectValues(skuGroups).some((group) => {
-                    if (Insider.fns.has(group.products, elementSku)) {
-
-                        giftGroups = [...giftGroups, group];
-                        appendLocationElements = [...appendLocationElements, $product];
-
-                        return true;
-                    }
-                });
-            });
-        } else {
-            Insider.fns.objectValues(skuGroups).some((group) => {
-                const $addToCart = Insider.dom(addToCart);
-
-                if (Insider.fns.has(group.products, $addToCart.attr(config.skuAttribute))) {
-                    giftGroups = [...giftGroups, group];
-                    appendLocationElements = [...appendLocationElements, Insider.dom(appendLocationProduct)];
-
-                    insertAction = 'before';
-
-                    return true;
-                }
-            });
-        }
-
-        return { giftGroups, appendLocationElements, insertAction };
     };
 
     self.reset = () => {
@@ -167,128 +148,132 @@
     };
 
     self.buildCSS = () => {
-        const { wrapper, container, categoryProduct, moveFromTop } = selectors;
+        const { wrapper, header, notice } = selectors;
 
-        const customStyle =
-        `${ wrapper } {
-            display: flex;
-            padding: 10px;
-            background-color: #DEE1FE;
-            border-radius: 20px;
-            margin-top: 0;
-            margin-bottom: 20px;
+        let customStyle =
+        `${ header } {
+            font-size: 14px !important;
+            font-weight: 700;
         }
-        ${ container } {
-            display: flex;
-            flex-direction: column;
+        ${ notice } {
+            font-size: 12px !important;
         }
-        ${ container } h1 {
-            font-size: 12px;
-            font-weight: bold;
-        }
-        ${ container } span {
-            font-size: 10px;
-        }
-        ${ categoryProduct } {
-            border-top-right-radius: 20px !important;
-            border-top-left-radius: 20px !important;
-            border-bottom-left-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
-            margin-bottom: 0 !important;
-            left: -16px;
-            position: relative;
-            width: calc(100% + 32px);
-        }
-        ${ moveFromTop } {
-            top: 110px !important;
-        }
-        @media screen and (max-width: 500px) {
+        @media (max-width: 120px) {
             ${ wrapper } {
-                margin-top: 10px;
-                margin-bottom: 0px;
+                margin: unset !important;
+                border-radius: 25vh 25vh 0 0;
             }
         }`;
+
+        if (isDesktop && (Insider.systemRules.call('isOnCategoryPage') || Insider.systemRules.call('isOnProductPage'))) {
+            customStyle += `
+            ${ wrapper } {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: start;
+              background-color: #dae0fd;
+              margin: 1vh;
+              border-radius: 25vh;
+              padding: 0.5vh;
+          }`;
+        } else if (!isDesktop && Insider.systemRules.call('isOnCategoryPage')) {
+            customStyle += `
+            ${ wrapper } {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: start;
+              background-color: #dae0fd;
+              margin-bottom: -16px;
+              border-radius: 25vh 25vh 0 0;
+              padding: 0.5vh;
+              z-index: 9 !important;
+              position: relative;
+          }`;
+        } else if (Insider.fns.hasParameter('/offer') || (!isDesktop && Insider.systemRules.call('isOnProductPage'))) {
+            const borderRadius = Insider.fns.hasParameter('/offer') ? '2vh 2vh 0 0' : '2vh 2vh 2vh 2vh';
+            const marginBottom = Insider.fns.hasParameter('/offer') && !isDesktop ? '-1.5vh' : '-4.5vh';
+
+            customStyle += `${ wrapper } {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: start;
+              background-color: #dae0fd;
+              margin-bottom: ${ marginBottom };
+              border-radius: ${ borderRadius };
+              padding: 0.5vh;
+              z-index: 9 !important;
+              position: relative;
+            }
+
+            ${ header } {
+                font-size: 13px !important;
+                margin: 0px 10px !important;
+            }
+
+            ${ notice } {
+                margin: 0px 10px !important;
+            }
+            `;
+        }
 
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
     };
 
-    self.buildHTML = (giftGroup, $appendElement, insertAction) => {
+    self.buildHTML = () => {
+        const { wrapper, header, notice, join, modelData } = classes;
+        const { categoryPageProducts, categoryPageProductTitle, productPageProductId, productPageImage,
+            offerPageProduct, offerPageProductLink } = selectors;
+        const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
+        const productPageProduct = config[currentProductId];
+        const isCategoryPage = Insider.systemRules.call('isOnCategoryPage');
+        const isProductPage = Insider.systemRules.call('isOnProductPage');
+        const isOfferPage = Insider.fns.hasParameter('/offer');
 
-        const { paraCardText, giftSku, bonusAmount } = giftGroup;
-        const { wrapper, container, goal, moveFromTop, categoryProduct } = classes;
-        const { badgeContainer, wrapper: wrapperSelector } = selectors;
-        const { deliveryText, giftIdAttribute, bonusAmountAttribute } = config;
+        const htmlTemplate = (price) => `
+          <div class="${ wrapper } ${ join }">
+              <p class="${ header }">Buy now and get ${ price } TL Para Card Amount</p>
+              <p class="${ notice }">Para card amount will be delivered after 14 days</p>
+          </div>`;
 
-        const outerHtml =
-        `<div class="${ wrapper } ${ goal }">
-            <div class="${ container }" ${ giftIdAttribute }="${ giftSku }" ${ bonusAmountAttribute }="${ bonusAmount ?? '' }">
-                <h1>${ paraCardText ?? '' }</h1>
-                <span>${ deliveryText }</span>
-            </div>
-        </div>`;
+        const appendHtml = (location, price, position = 'after') => {
+            const html = htmlTemplate(price);
 
-        $appendElement[insertAction](outerHtml);
-
-        if (isCategoryPage) {
-            $appendElement.find(badgeContainer).addClass(moveFromTop);
-
-            Insider.dom(wrapperSelector).addClass(categoryProduct);
-        }
-    };
-
-    self.setEvents = () => {
-        const { viewMore, categoryAddToCart, appendLocationCategory, popUp, wrapper } = selectors;
-        const { giftIdAttribute, bonusAmountAttribute } = config;
-
-        Insider.eventManager.once(`click.show:more:product:${ variationId }`, viewMore, () => {
-            setTimeout(() => {
-                self.buildCampaign();
-            }, 2000);
-        });
+            Insider.dom(location)[position](html);
+        };
 
         if (isCategoryPage) {
-            Insider.eventManager.once(`click.add:from:category:page:${ variationId }`, `${ categoryAddToCart }`,
-                (event) => {
-                    if (Insider.dom(event.target).closest(appendLocationCategory).find(wrapper).exists()) {
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
+            Insider.dom(categoryPageProducts).accessNodes((node) => {
+                const $node = Insider.dom(node).find(categoryPageProductTitle);
+                const productId = $node.attr(modelData);
+                const $productOptions = $node.parent().next();
 
-                        const $appendWrapper = Insider.dom(event.target).closest(appendLocationCategory);
+                if (config[productId]) {
+                    const price = config[productId].paraCardAmount;
+                    const method = isDesktop ? 'after' : 'prepend';
 
-                        const giftId = $appendWrapper.find(`[${ giftIdAttribute }]`).attr(giftIdAttribute);
-                        const bonusAmount = $appendWrapper.find(`[${ bonusAmountAttribute }]`)
-                            .attr(bonusAmountAttribute);
-
-                        if (giftId) {
-                            Insider.__external.giftId161221 = giftId;
-                            Insider.__external.bonusAmount161221 = bonusAmount;
-
-                            Insider.campaign.info.show(Insider.campaign.userSegment
-                                .getActiveVariationByBuilderId(smartRecommenderBuilderId));
-                        }
-                    }
-
-                });
-        } else {
-            Insider.fns.onElementLoaded(popUp, () => {
-                const giftId = Insider.dom(`[${ giftIdAttribute }]`).attr(giftIdAttribute);
-                const bonusAmount = Insider.dom(`[${ bonusAmountAttribute }]`).attr(bonusAmountAttribute);
-
-                if (giftId) {
-                    Insider.__external.giftId161221 = giftId;
-                    Insider.__external.bonusAmount161221 = bonusAmount;
-
-                    Insider.campaign.webInfo.clearVisibleCampaignsByType('ON-PAGE');
-                    Insider.campaign.info.clearVisibleCampaignsByType('ON-PAGE');
-
-                    Insider.campaign.info.show(Insider.campaign.userSegment
-                        .getActiveVariationByBuilderId(smartRecommenderBuilderId));
+                    appendHtml(isDesktop ? $productOptions : node, price, method);
                 }
+            });
+        } else if (isProductPage && productPageProduct) {
+            const price = productPageProduct.paraCardAmount;
+            const appendLocation = isDesktop ? productPageProductId : productPageImage;
+            const method = isDesktop ? 'after' : 'before';
 
-            }).listen();
+            appendHtml(appendLocation, price, method);
+        } else if (isOfferPage) {
+            Insider.dom(offerPageProduct).accessNodes((node) => {
+                const productId = Insider.dom(node).find(offerPageProductLink).attr('title');
+
+                if (config[productId]) {
+                    appendHtml(node, config[productId].paraCardAmount, 'prepend');
+                }
+            });
         }
     };
 
-    return self.buildCampaign();
+    return self.init();
 })({});
-/* OPT-161221 END */
+/* OPT-162992 END */

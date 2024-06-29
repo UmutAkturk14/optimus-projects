@@ -3,7 +3,7 @@
     'use strict';
 
     const isDesktop = Insider.browser.isDesktop();
-    const builderId = isDesktop ? 3525 : 3526;
+    const builderId = isDesktop ? 3547 : 3574;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
     const isOfferPage = Insider.fns.hasParameter('/offer');
     const isCategoryPage = Insider.systemRules.call('isOnCategoryPage');
@@ -18,7 +18,10 @@
         header: `ins-custom-text-header-${ variationId }`,
         notice: `ins-custom-text-notice-${ variationId }`,
         modelData: 'data-modelcode',
-        positionRelative: `ins-element-position-relative-${ variationId }`
+        positionRelative: `ins-element-position-relative-${ variationId }`,
+        addToCart: `ins-add-to-cart-${ variationId }`,
+        hidden: `ins-hidden-element-${ variationId }`,
+        infoWrapper: `ins-preview-wrapper-${ variationId }`
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
@@ -30,7 +33,13 @@
         productPageProductId: '.pd-info__sku',
         productPageImage: '.first-image',
         offerPageProduct: '.cmp-prd-card_item',
-        offerPageProductLink: '.cmp-prd-card_item-thbnail'
+        offerPageProductLink: '.cmp-prd-card_item-thbnail',
+        categoryPageAddToCartButton: '.cta.cta--contained.cta--black.js-cta-addon',
+        productPageAddToCartButton: '.cost-box__cta:contains("Satın Al")',
+        offerPageAddToCartButton: '.cta.cta--contained.cta--black.cmp-prd-card_cta-btn',
+        skipButton: '.ins-skip-button',
+        closeButton: '.ins-element-close-button',
+        popUpAddToCart: '.ins-custom-add-to-cart-button'
     });
 
     const config = {
@@ -122,29 +131,37 @@
             self.buildCSS();
             self.buildHTML();
             self.addClass();
+            self.setEvents();
         }
     };
 
     self.reset = () => {
-        const { style, wrapper, positionRelative: positionRelativeSelector } = selectors;
+        const { style, wrapper, positionRelative: positionRelativeSelector, addToCart } = selectors;
         const { positionRelative } = classes;
 
-        Insider.dom(`${ style }, ${ wrapper }`).remove();
+        Insider.dom(`${ style }, ${ wrapper }, ${ addToCart }`).remove();
         Insider.dom(positionRelativeSelector).removeClass(positionRelative);
     };
 
     self.buildCSS = () => {
-        const { wrapper, header, notice, positionRelative } = selectors;
+        const { wrapper, addToCart, hidden } = selectors;
         let customStyle = `
-        ${ header } {
-            font-size: 14px !important;
-            font-weight: 700;
+        ${ addToCart } {
+            font-size: 1.4vh;
+            color: white;
+            text-align: center;
+            padding: .69444444vw 1.66666667vw .76388889vw 1.66666667vw;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            order: -1;
+            font-weight: 600;
+            cursor: pointer;
         }
-        ${ notice } {
-            font-size: 12px !important;
+        ${ addToCart }:hover {
+            background-color: #595959;
         }
-        ${ positionRelative } {
-            position: relative;
+        ${ hidden } {
+            display: none !important;
         }
         @media (max-width: 120px) {
             ${ wrapper } {
@@ -153,67 +170,53 @@
             }
         }`;
 
-        const wrapperBaseStyle = `
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: start;
-            background-color: #dae0fd;
-            padding: 0.5vh;`;
+        const addToCartBaseStyle = `
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: .69444444vw 1.66666667vw .76388889vw 1.66666667vw;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            order: -1;
+            font-weight: 600;
+            cursor: pointer;`;
 
-        if (isDesktop && (isCategoryPage || isProductPage)) {
+        if (isCategoryPage) {
             customStyle += `
-            ${ wrapper } {
-                ${ wrapperBaseStyle }
-                margin: 1vh;
-                border-radius: 25vh;
-            }
-          `;
-        } else if (!isDesktop && isCategoryPage) {
-            customStyle += `
-            ${ wrapper } {
-                ${ wrapperBaseStyle }
-                margin-bottom: -12px;
-                border-radius: 25vh 25vh 0 0;
-                z-index: 9 !important;
-                position: relative;
-            }
-          `;
-        } else if (isOfferPage && isDesktop) {
-            customStyle += `
-            ${ wrapper } {
-                ${ wrapperBaseStyle }
-                border-radius: 2vh 2vh 0 0;
-                z-index: 9 !important;
-                position: absolute;
-                width: 92.7%;
-                top: -1.2vh;
-            }
-            ${ header } {
-                font-size: 13px !important;
-                margin: 0px 10px !important;
-            }
-            ${ notice } {
-                margin: 0px 10px !important;
+            ${ addToCart } {
+                ${ addToCartBaseStyle }
+                font-size: 1.4vh;
+                background-color: black;
             }`;
-        } else if (isOfferPage || (!isDesktop && isProductPage)) {
-            const borderRadius = isOfferPage ? '2vh 2vh 0 0' : '2vh';
-
+        } else if (isProductPage) {
             customStyle += `
-            ${ wrapper } {
-                ${ wrapperBaseStyle }
-                margin-bottom: -1.5vh;
-                border-radius: ${ borderRadius };
-                z-index: 9 !important;
-                position: relative;
+            @media (min-width: 1200px) {
+                ${ addToCart } {
+                    font-size: 1.4vh;
+                    width: 40%;
+                    margin-left: 30%;
+                }
             }
-            ${ header } {
-                font-size: 13px !important;
-                margin: 0px 10px !important;
+            ${ addToCart } {
+                ${ addToCartBaseStyle }
+                background-color: #007AFF;
+                padding: 1.5vh;
             }
-            ${ notice } {
-                margin: 0px 10px !important;
-            }`;
+            @media (max-width: 1200px) {
+                ${ addToCart } {
+                    font-size: 1.8vh;
+                    padding: 1.5vh;
+                    width: 80% !important;
+                    margin-left: 10% !important;
+                    border-radius: 35px;
+                }
+            }
+            `;
+        } else if (isOfferPage) {
+            customStyle += `
+            ${ addToCart } {
+                ${ addToCartBaseStyle }
+            }}`;
         }
 
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
@@ -281,49 +284,58 @@
     };
 
     self.handleAjaxElements = (page) => {
-        const { modelData } = classes;
-        const { categoryPageProducts, categoryPageProductTitle, productPageProductId, productPageImage,
-            offerPageProduct, offerPageProductLink, wrapper } = selectors;
+        const { modelData, addToCart, hidden } = classes;
+        const { categoryPageProducts, categoryPageProductTitle, offerPageProduct, offerPageProductLink,
+            categoryPageAddToCartButton, addToCart: addToCartSelector, productPageAddToCartButton,
+            offerPageAddToCartButton } = selectors;
         const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
-        const productPageProduct = config[currentProductId];
 
         const handleCategoryPage = () => {
-            Insider.dom(wrapper).remove();
+            Insider.dom(addToCartSelector).remove();
 
             Insider.fns.onElementLoaded(categoryPageProducts, () => {
                 Insider.dom(categoryPageProducts).accessNodes((node) => {
                     const $node = Insider.dom(node).find(categoryPageProductTitle);
                     const productId = $node.attr(modelData);
-                    const $productOptions = $node.parent().next();
                     const product = config[productId];
+                    const $partnerAddToCart = Insider.dom(node).find(categoryPageAddToCartButton);
 
                     if (product) {
-                        const price = product.paraCardAmount;
-                        const method = isDesktop ? 'after' : 'prepend';
 
-                        self.appendHtml(isDesktop ? $productOptions : node, price, method);
+                        // debugger;
+                        const buttonHtml = `
+                        <div class="${ addToCart }" data-ins-product-id="${ productId }">Sepete ekle</div>`;
+
+                        $partnerAddToCart.after(buttonHtml);
+                        $partnerAddToCart.addClass(hidden);
                     }
                 });
             }).listen();
         };
 
         const handleProductPage = () => {
-            Insider.dom(wrapper).remove();
+            Insider.dom(addToCartSelector).remove();
 
-            const price = productPageProduct.paraCardAmount;
-            const appendLocation = isDesktop ? productPageProductId : productPageImage;
-            const method = isDesktop ? 'after' : 'before';
+            const buttonHtml = `
+            <div class="${ addToCart }" data-ins-product-id="${ currentProductId }">Sepete ekle</div>`;
 
-            self.appendHtml(appendLocation, price, method);
+            Insider.dom(productPageAddToCartButton).addClass(hidden).after(buttonHtml);
         };
 
         const handleOfferPage = () => {
+            Insider.dom(addToCartSelector).remove();
+
             Insider.fns.onElementLoaded(offerPageProduct, () => {
                 Insider.dom(offerPageProduct).accessNodes((node) => {
                     const productId = Insider.dom(node).find(offerPageProductLink).attr('title');
+                    const $partnerAddToCart = Insider.dom(node).find(offerPageAddToCartButton);
 
                     if (config[productId]) {
-                        self.appendHtml(node, config[productId].paraCardAmount, 'prepend');
+                        const buttonHtml = `
+                      <div class="${ addToCart }" data-ins-product-id="${ productId }">Sepete ekle</div>`;
+
+                        $partnerAddToCart.after(buttonHtml);
+                        $partnerAddToCart.addClass(hidden);
                     }
                 });
             }).listen();
@@ -349,12 +361,70 @@
         }
     };
 
-    return self.init();
+    self.setEvents = () => {
+        const { addToCart, skipButton, infoWrapper, closeButton, popUpAddToCart } = selectors;
+
+        const method = isDesktop ? 'click' : 'mouseup';
+        const storageName = `ins-coupon-code-${ variationId }`;
+        const couponCode = 'some-coupon-code';
+
+        Insider.eventManager.once(`click.track:add:to:cart:clicks:${ variationId }`, addToCart, async (event) => {
+            const productId = Insider.dom(event.target).data('ins-product-id');
+            const url = `https://shop.samsung.com/tr/ng/p4v1/addCart?productCode=${ productId }&quantity=1&insTrigger=true`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'include', /* ATTENTION */
+                    headers: {
+                        'Accept': 'application/json, text/javascript, */*; q=0.01',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${ response.statusText }`);
+                }
+
+                const data = await response.json();
+
+                Insider.logger.log(data);
+                Insider.logger.log(`Success: Add to cart event for product: ${ productId }`);
+                debugger;
+                Insider.storage.localStorage.set({
+                    name: 'ins-gift-storage',
+                    value: { product: config[productId]?.giftProduct ?? '', amount: '5000' }
+                });
+
+                Insider.campaign.info.clearVisibleCampaignsByType('ON-PAGE');
+                Insider.campaign.webInfo.clearVisibleCampaignsByType('ON-PAGE');
+
+                Insider.campaign.info.show(variationId);
+            } catch (error) {
+                Insider.logger.log(`Error: ${ error.message }`);
+            }
+        });
+
+        Insider.eventManager.once(`${ method }.handle:skip:button:${ variationId }`, skipButton, () => {
+            Insider.dom(infoWrapper).find(closeButton).click();
+        });
+
+        Insider.eventManager.once(`${ method }.handle:add:to:cart:button:${ variationId }`, popUpAddToCart, () => {
+            console.log('Dispatchingg pop up add to cart stuff...');
+
+            Insider.storage.localStorage.set({
+                name: storageName,
+                value: couponCode
+            });
+
+            Insider.dom(infoWrapper).find(closeButton).click();
+        });
+    };
+
+    self.handleCheckoutPage = () => {
+
+    };
+
+    self.init();
 })({});
 /* OPT-162992 END */
-
-// Insider.dom('.summary-total__btn.summary-total__btn--link.link.ng-star-inserted').click();
-// Insider.dom('.modal').css('background-color', 'unset');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted').css('display', 'none');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted input').val('yo');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted button[type="submit"]').click();

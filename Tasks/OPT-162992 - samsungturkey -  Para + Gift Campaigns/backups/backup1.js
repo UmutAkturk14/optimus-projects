@@ -1,3 +1,4 @@
+// 18:38 Working.
 /* OPT-162992 START */
 ((self) => {
     'use strict';
@@ -352,9 +353,3 @@
     return self.init();
 })({});
 /* OPT-162992 END */
-
-// Insider.dom('.summary-total__btn.summary-total__btn--link.link.ng-star-inserted').click();
-// Insider.dom('.modal').css('background-color', 'unset');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted').css('display', 'none');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted input').val('yo');
-// Insider.dom('.cart-voucher.modal__container.ng-star-inserted button[type="submit"]').click();

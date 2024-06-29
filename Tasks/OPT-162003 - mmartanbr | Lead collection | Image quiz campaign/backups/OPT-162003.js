@@ -776,6 +776,7 @@ const selectors = {
   /* OPT-162003 START */
   questionWrapper: `${ previewWrapper } .ins-question-wrapper`,
   selectionAnswer: `${ previewWrapper } .ins-selection-answer`,
+  nameInputArea: '#ins-dynamic-input-17180220667661'
   /* OPT-162003 END */
 };
 const scriptsEnums = {
@@ -1151,7 +1152,7 @@ const questionConfig = {
 
 const createQuestions = () => {
   Insider.fns.keys(questionConfig).forEach((questionId) => {
-      const { questionInnerWrapper, header, selectionWrapper,  } = classes;
+      const { questionInnerWrapper, header, selectionWrapper } = classes;
       const { questionWrapper } = selectors;
 
       Insider.dom(`${ previewWrapper } [data-question-id=${ questionId }]`).remove();
@@ -1176,9 +1177,9 @@ const getSelectionsHtml = (selections) => {
       const { image, text } = selection;
 
       html += `
-          <div class="${selectionClass}">
-              <img class="${imageClass}" src="${image}" image-position="${index + 1}"></img>
-              <div class="${textClass}">${text}</div>
+          <div class="${ selectionClass }">
+              <img class="${ imageClass }" src="${ image }" image-position="${ index + 1 }"></img>
+              <div class="${ textClass }">${ text }</div>
           </div>
       `;
   });
@@ -1187,10 +1188,11 @@ const getSelectionsHtml = (selections) => {
 };
 
 const slideQuestions = () => {
-  Insider.eventManager.once(`click.select:answeewqewqr:${ camp.id }`, selectors.selectionAnswer, (event) => {
+  const { selectionAnswer, questionWrapper } = selectors;
+
+  Insider.eventManager.once(`click.select:answeewqewqr:${ camp.id }`, selectionAnswer, (event) => {
       const imagePosition = Insider.dom(event.target).attr('image-position');
       const questionId = Insider.dom(event.currentTarget).parents('.ins-question-inner-wrapper').attr('data-question-id');
-
 
       Insider.storage.update({
           name: 'ins-selected-answers-162003',
@@ -1199,7 +1201,7 @@ const slideQuestions = () => {
           }
       });
 
-      Insider.dom(selectors.questionWrapper).css('transform', `translate(-${ (Number(questionId) + 1) * 20 }%)`);
+      Insider.dom(questionWrapper).css('transform', `translate(-${ (Number(questionId) + 1) * 20 }%)`);
   });
 };
 /* OPT-162003 END */
@@ -1207,3 +1209,5 @@ const slideQuestions = () => {
 initialize();
 
 Insider.eventManager.once(`framelessInited${ camp.id }`, initialize);
+
+Insider.dom(selectors.nameInputArea).css('border-radius', '0', 'important'); /* OPT-162003 */

@@ -34,20 +34,21 @@
         firstAccordionItem: '.chakra-accordion__item:first',
         firstChakraLink: '.chakra-link:first',
         buttonTag: 'button',
-        dropdownLinks: '.css-phgwr1 a, .css-dj6t4t img, .chakra-stack .css-j7qwjs a, .css-1xv7r9p a',
+        dropdownLinks: '.css-phgwr1 a, .css-dj6t4t img, .chakra-stack .css-j7qwjs a, .css-1xv7r9p a, .css-70qvj9 a',
         navbarButtons: '.css-gg4vpm button',
         partnerNavLocation: '#__next',
         navigationBar: 'nav',
-        emptyElement: '.chakra-container.css-1f3uj3i:first',
-        login: '.css-0'
+        login: '.css-0',
+        animatedDropdownLinks: '.css-phgwr1',
+        partnerAddedElement: '.chakra-accordion__panel > div:not(:first-child)'
     });
 
     self.init = () => {
-        if (variationId) {
+        if (variationId && Insider.dom(selectors.navigationBar).exists()) {
             if (!Insider.campaign.isControlGroup(variationId)) {
                 self.reset();
-                self.cloneNavbar();
                 self.buildCSS();
+                self.cloneNavbar();
                 self.buildHTML();
                 self.setEvents();
             }
@@ -84,7 +85,8 @@
     };
 
     self.buildCSS = () => {
-        const { hidden, navbar, anchorActive, collapsible, navbarActive, navbarPassive } = selectors;
+        const { hidden, navbar, anchorActive, collapsible, navbarActive, navbarPassive,
+            partnerAddedElement } = selectors;
 
         const passiveNavbarColor = Insider.systemRules.call('isOnMainPage')
             ? 'var(--components-colors-transparent)'
@@ -119,9 +121,19 @@
             column-gap: var(--components-space-9);
             margin: 0px;
             direction: ltr;
+            margin-left: 10vw;
         }
         ${ navbar } .css-phgwr1 {
             padding-bottom: var(--components-space-4);
+        }
+        ${ navbar } .css-phgwr1 {
+            transition: transform 0.3s ease-out;
+        }
+        ${ navbar } .css-phgwr1:visible {
+            transform: translateY(0) !important;
+        }
+        ${ partnerAddedElement } {
+            display: none;
         }
         ${ navbar } .css-teg8ak {
             transition-property: var(--components-transition-property-common);
@@ -165,15 +177,18 @@
             overflow: hidden;
             transition: opacity 0.2s ease, max-height 0.2s ease;
         }
-
+        ${ navbar } .css-1vx205z {
+            color: unset;
+            transform: unset;
+        }
         ${ navbar } ${ collapsible }.animateDropdown {
             display: block !important;
             opacity: 1 !important;
             max-height: auto !important;
         }
         ${ anchorActive } + svg {
-            color: var(--components-colors-tfo-primary-500);
-            transform: rotate(-180deg);
+            color: var(--components-colors-tfo-primary-500) !important;
+            transform: rotate(-180deg) !important;
             transition-duration: 300ms;
         }
         ${ navbar } .css-dj6t4t {
@@ -218,13 +233,11 @@
     self.setEvents = () => {
         const { accordionItem, expanded: expandedSelector, collapsible, navbar,
             anchorActive: anchorActiveSelector, firstChakraLink, buttonTag, dropdownLinks, visiblePanel,
-            navbarButtons, emptyElement, login } = selectors;
-        const { expanded, navbarPassive, navbarActive, anchorActive, anchorPassive, hidden } = classes;
+            navbarButtons, login, whoWeAre, whatWeDo } = selectors;
+        const { expanded, navbarPassive, navbarActive, anchorActive, anchorPassive } = classes;
 
         const $allButtons = Insider.dom(navbarButtons);
         const $navbar = Insider.dom(navbar);
-        const $emptyElement = Insider.dom(emptyElement);
-        const $expandedSelector = Insider.dom(expandedSelector);
         const $window = Insider.dom(window);
 
         Insider.eventManager.once(`click.track:accordion:item:clicks:${ variationId }`, accordionItem, (event) => {
@@ -234,10 +247,11 @@
             const $button = $accordion.find(buttonTag);
             const $loginButton = $accordion.find(login);
             const $anchorActiveSelector = Insider.dom(anchorActiveSelector);
+            const $expandedSelector = Insider.dom(expandedSelector);
+            let goalId;
 
             if ($collapsible.hasClass(expanded)) {
-                // $emptyElement.addClass(hidden);
-                $collapsible.removeClass(expanded);
+                $expandedSelector.removeClass(expanded);
 
                 $link.removeClass(anchorActive).addClass(anchorPassive);
                 $navbar.removeClass(navbarActive).addClass(navbarPassive);
@@ -247,7 +261,6 @@
                 self.animateDropdown($collapsible, 'none', 0);
                 self.setAriaExpanded($button, 'false');
             } else {
-                // $emptyElement.removeClass(hidden);
                 $anchorActiveSelector.removeClass(anchorActive).addClass(anchorPassive);
                 $navbar.addClass(navbarActive).removeClass(navbarPassive);
                 $expandedSelector.removeClass(expanded);
@@ -259,10 +272,21 @@
                     $navbar.removeClass(navbarActive).addClass(navbarPassive);
                 }
 
+                self.animateDropdownLinkAnimation(false);
                 self.setAriaExpanded($allButtons, 'false');
                 self.setAriaExpanded($button, 'true');
                 self.animateDropdown(collapsible, 'none', 0);
                 self.animateDropdown($collapsible, 'block', 1);
+            }
+
+            if (Insider.dom(event.target).text() === 'Who we are') {
+                goalId = 49;
+            } else if (Insider.dom(event.target).text() === 'What we do') {
+                goalId = 51;
+            }
+
+            if (goalId) {
+                Insider.utils.opt.sendCustomGoal(builderId, goalId, false);
             }
         });
 
@@ -278,26 +302,24 @@
                     $navbar.removeClass(navbarActive).addClass(navbarPassive);
                 }
             }
-
-            if ($window.scrollTop() >= 500) {
-                // $emptyElement.addClass(hidden);
-            }
         }, 100));
 
         Insider.eventManager.once(`click.track:window:clicks:${ variationId }`, window, (event) => {
             event.preventDefault();
+
             const $buttons = Insider.dom(navbarButtons);
             const $anchorActiveSelector = Insider.dom(anchorActiveSelector);
+            const $expandedSelector = Insider.dom(expandedSelector);
 
             if (Insider.dom(event.target).closest(accordionItem).length < 1 && Insider.dom(visiblePanel).length > 0) {
                 $anchorActiveSelector.removeClass(anchorActive).addClass(anchorPassive);
+                $expandedSelector.removeClass(expanded);
 
                 self.setAriaExpanded($buttons, 'false');
                 self.animateDropdown(collapsible, 'none', 0);
 
                 if ($window.scrollTop() < 200) {
                     $navbar.removeClass(navbarActive).addClass(navbarPassive);
-                    // $emptyElement.addClass(hidden);
                 }
             }
         });
@@ -308,10 +330,21 @@
             opacity,
             height: 'toggle'
         }, 200);
+
+        setTimeout(() => {
+            self.animateDropdownLinkAnimation(opacity === 1);
+        }, 200);
     };
 
     self.setAriaExpanded = (element, value) => {
         element.attr('aria-expanded', value);
+    };
+
+    self.animateDropdownLinkAnimation = (boolean) => {
+        const { navbar, animatedDropdownLinks } = selectors;
+        const translateValue = boolean ? 'translateY(0%)' : 'translateY(-20%)';
+
+        Insider.dom(navbar).find(animatedDropdownLinks).css('transform', translateValue, 'important');
     };
 
     return self.init();

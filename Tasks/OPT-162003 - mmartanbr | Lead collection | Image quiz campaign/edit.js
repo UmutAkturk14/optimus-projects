@@ -775,7 +775,7 @@ const selectors = {
   multipleSettingsStyle: '.ins-multiple-settings-style',
   /* OPT-162003 START */
   questionWrapper: `${ previewWrapper } .ins-question-wrapper`,
-  selectionAnswer: `${ previewWrapper } .ins-selection-answer`,
+  selectionAnswer: `${ previewWrapper } .ins-selection-answer`
   /* OPT-162003 END */
 };
 const scriptsEnums = {
@@ -1062,91 +1062,91 @@ var setEvents = function () {
 
 /* OPT-162003 START */
 const questionConfig = {
-  0: {
-      question: 'Example question',
-      selections: [
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/_0000_CAMA%2010%20-%20MMPIQKCQZONEVC-MM18CJDQA5520-EQMIC.1FOO21VC--1716831991.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          }
-      ]
-  },
-  1: {
-      question: 'Example question',
-      selections: [
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/popupcorrigido-1711996777.jpeg',
-              text: 'Lorem Ipsum',
-          }
-      ]
-  },
-  2: {
-      question: 'Example question',
-      selections: [
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          }
-      ]
-  },
-  3: {
-      question: 'Example question',
-      selections: [
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          }
-      ]
-  },
-  4: {
-      question: 'Example question',
-      selections: [
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          },
-          {
-              image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
-              text: 'Lorem Ipsum',
-          }
-      ]
-  }
+    0: {
+        question: 'Example question',
+        selections: [
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/_0000_CAMA%2010%20-%20MMPIQKCQZONEVC-MM18CJDQA5520-EQMIC.1FOO21VC--1716831991.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            }
+        ]
+    },
+    1: {
+        question: 'Example question',
+        selections: [
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/popupcorrigido-1711996777.jpeg',
+                text: 'Lorem Ipsum',
+            }
+        ]
+    },
+    2: {
+        question: 'Example question',
+        selections: [
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            }
+        ]
+    },
+    3: {
+        question: 'Example question',
+        selections: [
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            }
+        ]
+    },
+    4: {
+        question: 'Example question',
+        selections: [
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            },
+            {
+                image: 'https://image.useinsider.com/mmartanbr/defaultImageLibrary/content_maior_maisfrio-1717704989.jpeg',
+                text: 'Lorem Ipsum',
+            }
+        ]
+    }
 };
 
 const createQuestions = () => {
@@ -1155,14 +1155,14 @@ const createQuestions = () => {
         const { questionWrapper } = selectors;
 
         Insider.dom(`${ previewWrapper } [data-question-id=${ questionId }]`).remove();
-        const questionHtml = `
-            <div data-question-id=${ questionId } class="${ questionInnerWrapper }">
-                <div class="${ header }">${ questionConfig[questionId].question }</div>
-                <div class="${ selectionWrapper }">
-                    ${ getSelectionsHtml(questionConfig[questionId].selections) }
-                </div>
+
+        const questionHtml =
+        `<div data-question-id=${ questionId } class="${ questionInnerWrapper }">
+            <div class="${ header }">${ questionConfig[questionId].question }</div>
+            <div class="${ selectionWrapper }">
+                ${ getSelectionsHtml(questionConfig[questionId].selections) }
             </div>
-        `;
+        </div>`;
 
         Insider.dom(questionWrapper).append(questionHtml);
     });
@@ -1175,12 +1175,11 @@ const getSelectionsHtml = (selections) => {
         const { selection: selectionClass, image: imageClass, text: textClass } = classes;
         const { image, text } = selection;
 
-        html += `
-            <div class="${ selectionClass }">
-                <img class="${ imageClass }" src="${ image }" image-position="${ index + 1 }"></img>
-                <div class="${ textClass }">${ text }</div>
-            </div>
-        `;
+        html +=
+        `<div class="${ selectionClass }">
+            <img class="${ imageClass }" src="${ image }" image-position="${ index + 1 }"></img>
+            <div class="${ textClass }">${ text }</div>
+        </div>`;
     });
 
     return html;
@@ -1189,9 +1188,10 @@ const getSelectionsHtml = (selections) => {
 const slideQuestions = () => {
     const { selectionAnswer, questionWrapper } = selectors;
 
-    Insider.eventManager.once(`click.select:answeewqewqr:${ camp.id }`, selectionAnswer, (event) => {
+    Insider.eventManager.once(`click.select:set:selection:${ camp.id }`, selectionAnswer, (event) => {
         const imagePosition = Insider.dom(event.target).attr('image-position');
-        const questionId = Insider.dom(event.currentTarget).parents('.ins-question-inner-wrapper').attr('data-question-id');
+        const questionId = Insider.dom(event.currentTarget).parents('.ins-question-inner-wrapper')
+            .attr('data-question-id');
 
         Insider.storage.update({
             name: 'ins-selected-answers-162003',

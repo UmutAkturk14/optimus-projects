@@ -39,15 +39,16 @@
         partnerNavLocation: '#__next',
         navigationBar: 'nav',
         login: '.css-0',
-        animatedDropdownLinks: '.css-phgwr1'
+        animatedDropdownLinks: '.css-phgwr1',
+        partnerAddedElement: '.chakra-accordion__panel > div:not(:first-child)'
     });
 
     self.init = () => {
         if (variationId && Insider.dom(selectors.navigationBar).exists()) {
             if (!Insider.campaign.isControlGroup(variationId)) {
                 self.reset();
-                self.cloneNavbar();
                 self.buildCSS();
+                self.cloneNavbar();
                 self.buildHTML();
                 self.setEvents();
             }
@@ -84,7 +85,8 @@
     };
 
     self.buildCSS = () => {
-        const { hidden, navbar, anchorActive, collapsible, navbarActive, navbarPassive } = selectors;
+        const { hidden, navbar, anchorActive, collapsible, navbarActive, navbarPassive,
+            partnerAddedElement } = selectors;
 
         const passiveNavbarColor = Insider.systemRules.call('isOnMainPage')
             ? 'var(--components-colors-transparent)'
@@ -123,12 +125,14 @@
         ${ navbar } .css-phgwr1 {
             padding-bottom: var(--components-space-4);
         }
-        .css-phgwr1 {
-            transform: translateY(-100%);
+        ${ navbar } .css-phgwr1 {
             transition: transform 0.3s ease-out;
         }
-        .css-phgwr1:visible {
+        ${ navbar } .css-phgwr1:visible {
             transform: translateY(0) !important;
+        }
+        ${ partnerAddedElement } {
+            display: none;
         }
         ${ navbar } .css-teg8ak {
             transition-property: var(--components-transition-property-common);
@@ -172,14 +176,18 @@
             overflow: hidden;
             transition: opacity 0.2s ease, max-height 0.2s ease;
         }
+        ${ navbar } .css-1vx205z {
+            color: unset;
+            transform: unset;
+        }
         ${ navbar } ${ collapsible }.animateDropdown {
             display: block !important;
             opacity: 1 !important;
             max-height: auto !important;
         }
         ${ anchorActive } + svg {
-            color: var(--components-colors-tfo-primary-500);
-            transform: rotate(-180deg);
+            color: var(--components-colors-tfo-primary-500) !important;
+            transform: rotate(-180deg) !important;
             transition-duration: 300ms;
         }
         ${ navbar } .css-dj6t4t {

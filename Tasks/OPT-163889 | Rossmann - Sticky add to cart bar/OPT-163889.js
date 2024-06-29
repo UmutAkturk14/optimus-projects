@@ -34,8 +34,7 @@
         quantityChange: `ins-custom-quantity-change-${ variationId }`,
         quantityDecrease: `ins-custom-quantity-decrease-${ variationId }`,
         quantityIncrease: `ins-custom-quantity-increase-${ variationId }`,
-        quantityInput: `ins-custom-quantity-input-${ variationId }`,
-        footerHeight: `ins-custom-footer-height-${ variationId }`
+        quantityInput: `ins-custom-quantity-input-${ variationId }`
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
@@ -51,10 +50,12 @@
 
     self.init = () => {
         if (variationId) {
+            const { partnerAddToCartButton } = selectors;
+
             Insider.eventManager.once(`scroll.handle:campaign:${ variationId }`, window, Insider.fns.throttle(() => {
                 const scrollDirection = self.checkScrollDirection();
                 const includeHeader = scrollDirection === 'up';
-                const isVisible = self.isElementInView(selectors.partnerAddToCartButton, includeHeader);
+                const isVisible = self.isElementInView(partnerAddToCartButton, includeHeader);
 
                 if (!isVisible) {
                     if (!Insider.campaign.isControlGroup(variationId) && !isCampaignDisplayed) {
@@ -62,38 +63,10 @@
                     }
 
                     Insider.campaign.custom.show(variationId);
-
                     isCampaignDisplayed = true;
                 }
             }, 100));
         }
-    };
-
-    self.checkScrollDirection = () => {
-        const scrollTop = $window.scrollTop();
-        const direction = scrollTop > lastScrollTop ? 'down' : 'up';
-
-        lastScrollTop = scrollTop;
-
-        return direction;
-    };
-
-    self.isElementInView = (elementSelector, includeHeader) => {
-        const { pageHeader } = selectors;
-        const $element = Insider.dom(elementSelector);
-        const elementTop = $element.offset().top;
-        const elementBottom = elementTop + $element.outerHeight();
-
-        let viewportTop = $window.scrollTop();
-        const viewportBottom = viewportTop + $window.height();
-
-        if (includeHeader) {
-            const headerHeight = Insider.dom(pageHeader).outerHeight();
-
-            viewportTop += headerHeight;
-        }
-
-        return elementBottom > viewportTop && elementTop < viewportBottom;
     };
 
     self.buildCampaign = () => {
@@ -113,7 +86,7 @@
         const { wrapper, hidden, container, imageWrapper, productInfo, priceInfo, addToCart, productWrapper, image,
             productBrand, productNameOne, productNameTwo, discountedPriceWrapper, brandImage, originalPriceWrapper,
             discountedPrice, discountedPriceContainer, addToCartWrapper, quantityController, quantityChange,
-            quantityDecrease, quantityIncrease, footerHeight } = selectors;
+            quantityDecrease, quantityIncrease } = selectors;
 
         const customStyle = `
         ${ wrapper } {
@@ -152,9 +125,6 @@
             height: 50%;
             width: 50%;
         }
-        ${ footerHeight } {
-            min-height: 75vh;
-        }
         ${ addToCartWrapper } {
             display: flex;
             justify-content: center;
@@ -168,8 +138,6 @@
             font-weight: 600;
             cursor: pointer;
             width: 7vw;
-            display: flex;
-            justify-content: center;
         }
         ${ quantityController } {
             display: flex;
@@ -256,7 +224,7 @@
             discountedPriceWrapper, originalPriceWrapper, brandImage, discountedPriceContainer, addToCartWrapper,
             quantityController, quantityChange, quantityDecrease, quantityIncrease, quantityInput } = classes;
         const { wrapper: wrapperSelector, footer } = selectors;
-        const currentProduct = Insider.systemRules.call('getCurrentProduct');
+        const currentProduct = Insider.systemRules.getCurrentProduct();
         const customAttributes = Insider.getCustomProductAttributes();
         const { img, price, originalPrice } = currentProduct;
         const { brand, product_name1, product_name2 } = customAttributes;
@@ -310,9 +278,9 @@
     };
 
     self.setEvents = () => {
-        const { hidden, quantityIncrease: quantityIncreaseClass, footerHeight } = classes;
+        const { hidden } = classes;
         const { wrapper, notification, backToTopButton, partnerAddToCartButton, addToCart, quantityDecrease,
-            quantityIncrease, quantityInput, partnerQuantityController, footer } = selectors;
+            quantityIncrease, quantityInput, partnerQuantityController } = selectors;
 
         const $wrapper = Insider.dom(wrapper);
         const $notification = Insider.dom(notification);
@@ -325,27 +293,28 @@
             const scrollDirection = self.checkScrollDirection();
             const includeHeader = scrollDirection === 'up';
             const isVisible = self.isElementInView(partnerAddToCartButton, includeHeader);
-            const $footer = Insider.dom(footer);
 
             $wrapper.toggleClass(hidden, isVisible);
             $notification.toggleClass(hidden, !isVisible);
             $backToTopButton.toggleClass(hidden, !isVisible);
-            $footer.toggleClass(footerHeight, !isVisible);
         }, 100));
 
-        Insider.eventManager.once(`click.track:button:${ variationId }`, `${ quantityDecrease }, ${ quantityIncrease }`,
-            (event) => {
-                const $button = Insider.dom(event.target);
-                const currentQuantity = Number($quantityInput.val());
+        Insider.eventManager.once(`click.track:increase:button:${ variationId }`, quantityIncrease, () => {
+            const currentQuantity = Number($quantityInput.val());
+            const newValue = currentQuantity + 1;
 
-                if ($button.hasClass(quantityIncreaseClass)) {
-                    $quantityInput.val(currentQuantity + 1);
-                } else {
-                    if (currentQuantity > 1) {
-                        $quantityInput.val(currentQuantity - 1);
-                    }
-                }
-            });
+            $quantityInput.val(newValue);
+        });
+
+        Insider.eventManager.once(`click.track:decrease:button:${ variationId }`, quantityDecrease, () => {
+            const currentQuantity = Number($quantityInput.val());
+
+            if (currentQuantity > 1) {
+                const newValue = currentQuantity - 1;
+
+                $quantityInput.val(newValue);
+            }
+        });
 
         Insider.eventManager.once(`click.track:add:to:cart:${ variationId }`, addToCart, () => {
             $partnerQuantityController.val($quantityInput.val());
@@ -353,6 +322,33 @@
             $partnerQuantityController.val(1);
             $quantityInput.val(1);
         });
+    };
+
+    self.isElementInView = (elementSelector, includeHeader) => {
+        const { pageHeader } = selectors;
+        const $element = Insider.dom(elementSelector);
+        const elementTop = $element.offset().top;
+        const elementBottom = elementTop + $element.outerHeight();
+
+        let viewportTop = $window.scrollTop();
+        const viewportBottom = viewportTop + $window.height();
+
+        if (includeHeader) {
+            const headerHeight = Insider.dom(pageHeader).outerHeight();
+
+            viewportTop += headerHeight;
+        }
+
+        return elementBottom > viewportTop && elementTop < viewportBottom;
+    };
+
+    self.checkScrollDirection = () => {
+        const scrollTop = $window.scrollTop();
+        const direction = scrollTop > lastScrollTop ? 'down' : 'up';
+
+        lastScrollTop = scrollTop;
+
+        return direction;
     };
 
     self.init();
