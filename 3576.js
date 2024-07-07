@@ -25,7 +25,8 @@
         hidden: `ins-hidden-element-${ variationId }`,
         infoWrapper: `ins-preview-wrapper-${ variationId }`,
         backgroundUnset: `ins-background-unset-${ variationId }`,
-        productPageSecondAddToCart: `ins-second-add-to-cart-${ variationId }`
+        productPageSecondAddToCart: `ins-second-add-to-cart-${ variationId }`,
+        addToCartBaseStyle: `ins-add-to-cart-base-style-${ variationId }`
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
@@ -139,6 +140,9 @@
         texts: {
             addToCart: 'Sepete Ekle',
             buy: 'Satın Al'
+        },
+        urls: {
+            request: 'searchapi.samsung.com/'
         }
     };
 
@@ -163,12 +167,12 @@
     };
 
     self.buildCSS = () => {
-        const { wrapper, addToCart, hidden, backgroundUnset, productPageSecondAddToCart } = selectors;
-        let customStyle = `
-        ${ addToCart } {
+        const { wrapper, addToCart, hidden, backgroundUnset, productPageSecondAddToCart,
+            addToCartBaseStyle } = selectors;
+        let customStyle =
+        `${ addToCart } {
             color: white;
             text-align: center;
-            padding: .69444444vw 1.66666667vw .76388889vw 1.66666667vw;
             border-radius: 30px;
             transition: background-color 0.3s ease;
             order: -1;
@@ -183,6 +187,16 @@
         }
         ${ backgroundUnset } {
             background-color: unset !important;
+        }
+        ${ addToCartBaseStyle } {
+            background-color: black;
+            color: white;
+            text-align: center;
+            border-radius: 30px;
+            transition: background-color 0.3s ease;
+            order: -1;
+            font-weight: 550;
+            cursor: pointer;
         }
         @media (min-width: 1200px) {
             ${ addToCart } {
@@ -205,21 +219,9 @@
             }
         }`;
 
-        const addToCartBaseStyle = `
-            background-color: black;
-            color: white;
-            text-align: center;
-            padding: .69444444vw 1.66666667vw .76388889vw 1.66666667vw;
-            border-radius: 30px;
-            transition: background-color 0.3s ease;
-            order: -1;
-            font-weight: 550;
-            cursor: pointer;`;
-
         if (isCategoryPage) {
-            customStyle += `
-            ${ addToCart } {
-                ${ addToCartBaseStyle }
+            customStyle +=
+            `${ addToCart } {
                 background-color: black;
                 height: 5vh;
                 display: flex;
@@ -230,13 +232,12 @@
             }
             @media (max-width: 1200px) {
                 ${ addToCart } {
-                    ${ addToCartBaseStyle }
                     font-size: 1.8vh !important;
                 }
             }`;
         } else if (isProductPage) {
-            customStyle += `
-            @media (min-width: 1200px) {
+            customStyle +=
+            `@media (min-width: 1200px) {
                 ${ addToCart } {
                     font-size: 15px;
                 }
@@ -246,7 +247,6 @@
                 }
             }
             ${ addToCart } {
-                ${ addToCartBaseStyle }
                 font-size: 14px;
                 background-color: #007AFF;
                 padding: 1.5vh;
@@ -274,20 +274,15 @@
                 }
             }`;
         } else if (isOfferPage) {
-            const width = isDesktop ? '70% !important' : '60% !important';
-            const marginLeft = isDesktop ? '15% !important' : '20% !important';
-            const height = isDesktop ? '4.5vh !important' : '5vh !important';
-
-            customStyle += `
-            ${ addToCart } {
-                ${ addToCartBaseStyle }
+            customStyle +=
+            `${ addToCart } {
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 border-radius: 30px !important;
-                width: ${ width };
-                margin-left: ${ marginLeft };
-                height: ${ height }
+                width: ${ isDesktop ? '70% !important' : '60% !important' };
+                margin-left: ${ isDesktop ? '15% !important' : '20% !important' };
+                height: ${ isDesktop ? '4.5vh !important' : '5vh !important' }
             }}`;
         }
 
@@ -317,7 +312,7 @@
             pageHandlers[pageType]();
 
             Insider.utils.opt.ajaxListener((url, response, method) => {
-                if (method === 'GET' && Insider.fns.has(url, 'searchapi.samsung.com/')) {
+                if (method === 'GET' && Insider.fns.has(url, config.urls.request)) {
                     setTimeout(() => {
                         pageHandlers[pageType]();
                     }, 500);
@@ -327,7 +322,7 @@
     };
 
     self.handleOfferPage = () => {
-        const { addToCart, hidden, positionRelative } = classes;
+        const { addToCart, hidden, positionRelative, addToCartBaseStyle } = classes;
         const { offerPageProduct, offerPageProductLink, addToCart: addToCartSelector,
             offerPageAddToCartButton } = selectors;
 
@@ -340,7 +335,9 @@
 
             if (config.skuList[productId] && !isControlGroup) {
                 const buttonHtml = `
-                <div class="${ addToCart }" data-ins-product-id="${ productId }">${ config.texts.addToCartText }</div>`;
+                <div class="${ addToCart } ${ addToCartBaseStyle }" data-ins-product-id="${ productId }">
+                    ${ config.texts.addToCart }
+                </div>`;
 
                 $node.addClass(positionRelative);
                 $partnerAddToCart.after(buttonHtml);
@@ -350,7 +347,7 @@
     };
 
     self.handleCategoryPage = () => {
-        const { modelData, addToCart, hidden } = classes;
+        const { modelData, addToCart, hidden, addToCartBaseStyle } = classes;
         const { categoryPageProducts, categoryPageProductTitle, categoryPageAddToCartButton,
             addToCart: addToCartSelector } = selectors;
 
@@ -364,7 +361,8 @@
 
             if (product && !isControlGroup) {
                 const buttonHtml = `
-                <div class="${ addToCart }" data-ins-product-id="${ productId }">${ config.texts.addToCart }</div>`;
+                <div class="${ addToCart } ${ addToCartBaseStyle }"
+                    data-ins-product-id="${ productId }">${ config.texts.addToCart }</div>`;
 
                 $partnerAddToCart.after(buttonHtml);
                 $partnerAddToCart.addClass(hidden);
@@ -373,14 +371,15 @@
     };
 
     self.handleProductPage = () => {
-        const { addToCart, hidden, productPageSecondAddToCart } = classes;
+        const { addToCart, hidden, productPageSecondAddToCart, addToCartBaseStyle } = classes;
         const { productPageAddToCartButton, addToCart: addToCartSelector } = selectors;
         const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
         const $productPageAddToCartButton = Insider.dom(productPageAddToCartButton);
 
         if (config.skuList[currentProductId] && !isControlGroup) {
             const buttonHtml = `
-            <div class="${ addToCart }" data-ins-product-id="${ currentProductId }">${ config.texts.buy }</div>`;
+            <div class="${ addToCart } ${ addToCartBaseStyle }"
+                data-ins-product-id="${ currentProductId }">${ config.texts.buy }</div>`;
 
             $productPageAddToCartButton.addClass(hidden).after(buttonHtml);
             Insider.dom(addToCartSelector).last().addClass(productPageSecondAddToCart);

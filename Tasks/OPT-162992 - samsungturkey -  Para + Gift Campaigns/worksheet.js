@@ -3,7 +3,7 @@
     'use strict';
 
     const isDesktop = Insider.browser.isDesktop();
-    const builderId = isDesktop ? 3525 : 3526;
+    const builderId = isDesktop ? 3576 : 3526;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
     const isOfferPage = Insider.fns.hasParameter('/offer');
     const isCategoryPage = Insider.systemRules.call('isOnCategoryPage');

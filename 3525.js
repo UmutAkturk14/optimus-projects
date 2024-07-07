@@ -215,38 +215,17 @@
         } else if (isOfferPage || (!isDesktop && isProductPage)) {
             customStyle +=
             `${ wrapper } {
-                margin-top: 10px;
                 margin-bottom: -1.5vh;
                 border-radius: ${ isOfferPage ? '2vh 2vh 0 0' : '2vh' };
                 z-index: 9 !important;
                 position: relative;
             }
             ${ header } {
-                font-size: 17px !important;
+                font-size: 18px !important;
                 margin: 0px 10px !important;
             }
             ${ notice } {
                 margin: 0px 10px !important;
-            }
-            @media (min-width: 600px) {
-                ${ wrapper } {
-                    margin-top: unset !important;
-                    margin-bottom: -1.5vh;
-                    border-radius: 5vh 5vh 0 0;
-                    z-index: 9 !important;
-                    position: absolute;
-                    width: 93%;
-                    height: 40px;
-                }
-                ${ header } {
-                    font-size: 10px !important;
-                    margin: 0 0 0 4px !important;
-                    margin-top: 10px !important;
-                }
-                ${ notice } {
-                    margin-left: 4px !important;
-                    font-size: 9px !important;
-                }
             }`;
         }
 
@@ -337,11 +316,9 @@
     };
 
     self.handleOfferPage = () => {
-        const { offerPageProduct, offerPageProductLink, wrapper } = selectors;
+        const { offerPageProduct, offerPageProductLink } = selectors;
         const { positionRelative } = classes;
         const { skuList } = config;
-
-        Insider.dom(wrapper).remove();
 
         Insider.dom(offerPageProduct).accessNodes((node) => {
             const $node = Insider.dom(node);

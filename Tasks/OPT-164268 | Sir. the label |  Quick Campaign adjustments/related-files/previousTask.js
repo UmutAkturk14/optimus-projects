@@ -1,9 +1,27 @@
+// Social Proof
+/* OPT-164268 START */
+(() => {
+    'use strict';
+
+    const builderId = 8;
+    const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
+    const appendLocation = '.swatch.Color.product-color.clearfix';
+
+    if (variationId) {
+        Insider.fns.onElementLoaded(appendLocation, () => {
+            Insider.campaign.info.show(variationId);
+        }).listen();
+    }
+})({});
+/* OPT-164268 END */
+
+// Shopping Trigger
 /* OPT-164268 START */
 ((self) => {
     'use strict';
 
     const isDesktop = Insider.browser.isDesktop();
-    const builderId = isDesktop ? 9 : 12;
+    const builderId = isDesktop ? 13 : 14;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
 
     const classes = {
@@ -20,24 +38,16 @@
 
     self.init = () => {
         if (variationId) {
-            if (Insider.systemRules.call('getCartCount') > 0) {
-                self.buildCampaign();
-            } else {
-                Insider.fns.onElementLoaded(selectors.cartItem, () => {
-                    self.buildCampaign();
-                }).listen();
-            }
-        }
-    };
+            Insider.fns.onElementLoaded(selectors.cartItem, () => {
+                if (!Insider.campaign.isControlGroup(variationId)) {
+                    self.reset();
+                    self.buildCSS();
+                    self.addClass();
+                }
 
-    self.buildCampaign = () => {
-        if (!Insider.campaign.isControlGroup(variationId)) {
-            self.reset();
-            self.buildCSS();
-            self.addClass();
+                Insider.campaign.info.show(variationId);
+            }).listen();
         }
-
-        Insider.campaign.info.show(variationId);
     };
 
     self.reset = () => {
@@ -52,9 +62,9 @@
         const { hidden } = selectors;
 
         const customStyle =
-        `${ hidden } {
-            display: none !important;
-        }`;
+      `${ hidden } {
+          display: none !important;
+      }`;
 
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
     };

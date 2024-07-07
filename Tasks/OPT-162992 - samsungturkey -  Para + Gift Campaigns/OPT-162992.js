@@ -113,43 +113,14 @@
         'HW-LS60D/TK': {
             giftProduct: '',
             paraCardAmount: '1,000'
-        },
-        // Testing...
-        'UE65DU7000UXTK': {
-            giftProduct: 'HW-LS60D/TK',
-            paraCardAmount: '4,500'
-        },
-        'UE65DU7200UXTK': {
-            giftProduct: 'HW-LS60D/TK',
-            paraCardAmount: '6,500'
-        },
-        'QE65Q80DATXTK': {
-            giftProduct: 'HW-LS60D/TK',
-            paraCardAmount: '7,500'
-        },
-        'SM-S928BZTQTUR': {
-            giftProduct: 'HW-LS60D/TK',
-            paraCardAmount: '5,000'
-        },
-        'QE65Q60DAUXTK': {
-            giftProduct: 'HW-LS60D/TK',
-            paraCardAmount: '5,000'
-        },
-        'UE65CU8100UXTK': {
-            giftProduct: 'HW-LS60D/TK',
-            paraCardAmount: '5,000'
         }
-        // Testing...
     };
 
     self.init = () => {
         if (variationId) {
-            if (!isControlGroup) {
-                self.reset();
-                self.buildCSS();
-                self.buildHTML();
-                self.addClass();
-            }
+            self.reset();
+            self.buildCSS();
+            self.handlePageContent();
         }
     };
 
@@ -201,7 +172,7 @@
             customStyle += `
             ${ wrapper } {
                 ${ wrapperBaseStyle }
-                margin-bottom: -16px;
+                margin-bottom: -12px;
                 border-radius: 25vh 25vh 0 0;
                 z-index: 9 !important;
                 position: relative;
@@ -247,37 +218,6 @@
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
     };
 
-    self.buildHTML = () => {
-        const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
-        const productPageProduct = config[currentProductId];
-
-        if (isCategoryPage) {
-            self.handleAjaxElements('category');
-        } else if (isProductPage && productPageProduct) {
-            self.handleAjaxElements('product');
-        } else if (isOfferPage) {
-            self.handleAjaxElements('offer');
-        }
-    };
-
-    self.addClass = () => {
-        if (isOfferPage) {
-            const { offerPageProduct, offerPageProductLink } = selectors;
-            const { positionRelative } = classes;
-
-            Insider.fns.onElementLoaded(offerPageProduct, () => {
-                Insider.dom(offerPageProduct).accessNodes((node) => {
-                    const $node = Insider.dom(node);
-                    const productId = $node.find(offerPageProductLink).attr('title');
-
-                    if (config[productId]) {
-                        $node.addClass(positionRelative);
-                    }
-                });
-            }).listen();
-        }
-    };
-
     self.appendHtml = (location, price, position = 'after') => {
         const { wrapper, header, notice, join, } = classes;
 
@@ -289,80 +229,96 @@
 
         const html = htmlTemplate(price);
 
-        Insider.campaign.custom.show(variationId);
-
         if (!isControlGroup) {
             Insider.dom(location)[position](html);
         }
+
+        Insider.campaign.custom.show(variationId);
     };
 
-    self.handleAjaxElements = (page) => {
-        const { modelData } = classes;
-        const { categoryPageProducts, categoryPageProductTitle, productPageProductId, productPageImage,
-            offerPageProduct, offerPageProductLink, wrapper } = selectors;
-        const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
-        const productPageProduct = config[currentProductId];
-
-        const handleCategoryPage = () => {
-            Insider.dom(wrapper).remove();
-
-            Insider.fns.onElementLoaded(categoryPageProducts, () => {
-                Insider.dom(categoryPageProducts).accessNodes((node) => {
-                    const $node = Insider.dom(node).find(categoryPageProductTitle);
-                    const productId = $node.attr(modelData);
-                    const $productOptions = $node.parent().next();
-                    const product = config[productId];
-
-                    if (product) {
-                        const price = product.paraCardAmount;
-                        const method = isDesktop ? 'after' : 'prepend';
-
-                        self.appendHtml(isDesktop ? $productOptions : node, price, method);
-                    }
-                });
-            }).listen();
+    self.handlePageContent = () => {
+        let pageType;
+        const pageHandlers = {
+            product: self.handleProductPage,
+            category: self.handleCategoryPage,
+            offer: self.handleOfferPage
         };
 
-        const handleProductPage = () => {
-            Insider.dom(wrapper).remove();
+        if (isOfferPage) {
+            pageType = 'offer';
+        } else if (isCategoryPage) {
+            pageType = 'category';
+        } else if (isProductPage) {
+            pageType = 'product';
+        }
 
-            const price = productPageProduct.paraCardAmount;
-            const appendLocation = isDesktop ? productPageProductId : productPageImage;
-            const method = isDesktop ? 'after' : 'before';
+        if (pageType) {
+            pageHandlers[pageType]();
 
-            self.appendHtml(appendLocation, price, method);
-        };
-
-        const handleOfferPage = () => {
-            Insider.fns.onElementLoaded(offerPageProduct, () => {
-                Insider.dom(offerPageProduct).accessNodes((node) => {
-                    const productId = Insider.dom(node).find(offerPageProductLink).attr('title');
-
-                    if (config[productId]) {
-                        self.appendHtml(node, config[productId].paraCardAmount, 'prepend');
-                    }
-                });
-            }).listen();
-        };
-
-        const handleAjaxRequest = (func) => {
-            func();
             Insider.utils.opt.ajaxListener((url, response, method) => {
                 if (method === 'GET' && url.includes('searchapi.samsung.com/')) {
                     setTimeout(() => {
-                        func();
+                        pageHandlers[pageType]();
                     }, 500);
                 }
             });
-        };
-
-        if (page === 'category') {
-            handleAjaxRequest(handleCategoryPage);
-        } else if (page === 'product') {
-            handleAjaxRequest(handleProductPage);
-        } else if (page === 'offer') {
-            handleAjaxRequest(handleOfferPage);
         }
+    };
+
+    self.handleCategoryPage = () => {
+        const { modelData } = classes;
+        const { categoryPageProducts, categoryPageProductTitle, wrapper } = selectors;
+
+        Insider.dom(wrapper).remove();
+
+        Insider.fns.onElementLoaded(categoryPageProducts, () => {
+            Insider.dom(categoryPageProducts).accessNodes((node) => {
+                const $node = Insider.dom(node).find(categoryPageProductTitle);
+                const productId = $node.attr(modelData);
+                const $productOptions = $node.parent().next();
+                const product = config[productId];
+
+                if (product) {
+                    const price = product.paraCardAmount;
+                    const method = isDesktop ? 'after' : 'prepend';
+
+                    self.appendHtml(isDesktop ? $productOptions : node, price, method);
+                }
+            });
+        }).listen();
+    };
+
+    self.handleProductPage = () => {
+        const { productPageProductId, productPageImage, wrapper } = selectors;
+        const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
+        const productPageProduct = config[currentProductId];
+
+        Insider.dom(wrapper).remove();
+
+        const price = productPageProduct.paraCardAmount;
+        const appendLocation = isDesktop ? productPageProductId : productPageImage;
+        const method = isDesktop ? 'after' : 'before';
+
+        self.appendHtml(appendLocation, price, method);
+    };
+
+    self.handleOfferPage = () => {
+        const { offerPageProduct, offerPageProductLink, wrapper } = selectors;
+        const { positionRelative } = classes;
+
+        Insider.dom(wrapper).remove();
+
+        Insider.fns.onElementLoaded(offerPageProduct, () => {
+            Insider.dom(offerPageProduct).accessNodes((node) => {
+                const $node = Insider.dom(node);
+                const productId = $node.find(offerPageProductLink).attr('title');
+
+                if (config[productId]) {
+                    self.appendHtml(node, config[productId].paraCardAmount, 'prepend');
+                    $node.addClass(positionRelative);
+                }
+            });
+        }).listen();
     };
 
     return self.init();
