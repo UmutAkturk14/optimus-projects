@@ -12,7 +12,6 @@
         Insider.utils.opt.ajaxListener((url, response, method) => {
             if (method === 'GET' && Insider.fns.has(url, requestText)) {
                 self.getInBasketData();
-
             }
         });
     }
