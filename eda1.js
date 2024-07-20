@@ -1,53 +1,45 @@
-/* OPT-156120 START */
+/* OPT-160439 START */
 ((self) => {
     'use strict';
 
-    const footballBuilderId = 2912;
-    const basketballBuilderId = 2913;
-    const footballVariationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(footballBuilderId);
-    const basketballVariationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(basketballBuilderId);
-    const firstVisitedStorage = `ins-first-visited-category-${ footballVariationId }`;
-    const lastVisitedStorage = `ins-last-visited-category-${ footballVariationId }`;
-    const lastVisitedStorageData = Insider.storage.localStorage.get(lastVisitedStorage);
-    const lastVisitedCategory = Insider.storage.localStorage.get('ins-default-attributes')?.last_visited_category_name;
-    const firstVisitedCategory = Insider.storage.session.get(`ins-first-visited-category-${ footballVariationId }`);
+    const builderId = 627;
+    const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
+    const storageName = 'ins-is-user-abandoned-subscription-160439';
 
     self.init = () => {
-        if ((footballVariationId || basketballVariationId) && Insider.systemRules.call('isOnCategoryPage') &&
-          (Insider.fns.has(lastVisitedCategory, 'Futbol') || Insider.fns.has(lastVisitedCategory, 'Basketbol'))) {
-            self.setLastVisitedCategory();
-        } else if (Insider.systemRules.call('isOnMainPage')) {
-            if (firstVisitedCategory) {
-                self.showCampaign(firstVisitedCategory);
-            } else if (lastVisitedCategory) {
-                self.showCampaign(lastVisitedCategory);
+        if (variationId) {
+            if (Insider.fns.hasParameter('/subscriptions/checkout/') && Insider.systemRules.call('isUserLoggedIn') && !Insider.fns.hasParameter('https://www.danmurphys.com.au/subscriptions/checkout/SUBMDMRWS/red-velvet') && !Insider.fns.hasParameter('https://www.danmurphys.com.au/subscriptions/checkout/SUBMDMWWS/classic-whites')) {
+                self.exitIntent();
             }
         }
     };
 
-    self.setLastVisitedCategory = () => {
-        if (!firstVisitedCategory) {
-            Insider.storage.session.set({
-                name: firstVisitedStorage,
-                value: lastVisitedStorageData ?? lastVisitedCategory,
-            });
+    self.exitIntent = () => {
+        if (!Insider.storage.localStorage.get(`sp-camp-${ variationId }`)) {
+            Insider.browser.isMobile() ? self.onFastScroll() : self.onExitIntend();
         }
+    };
 
-        Insider.storage.localStorage.set({
-            name: lastVisitedStorage,
-            value: lastVisitedCategory,
-            expires: Insider.dateHelper.addDay(365),
+    self.onFastScroll = () => {
+        let isExitIntended = false;
+
+        Insider.utils.onFastScroll(() => {
+            if (!isExitIntended) {
+                Insider.campaign.info.show(variationId);
+            }
+
+            isExitIntended = true;
         });
     };
 
-    self.showCampaign = (category) => {
-        if (Insider.fns.has(category, 'Futbol')) {
-            Insider.campaign.custom.show(footballVariationId);
-        } else if (Insider.fns.has(category, 'Basketbol')) {
-            Insider.campaign.custom.show(basketballVariationId);
-        }
+    self.onExitIntend = () => {
+        Insider.utils.onExitIntended({ id: variationId }, () => {
+            Insider.campaign.info.show(variationId);
+        });
     };
 
-    self.init();
+    return self.init();
 })({});
-/* OPT-156120 END */
+/* OPT-160439 END */
+
+return !!Insider.storage.localStorage.get('ins-status-abandoned-subscription-161758')
