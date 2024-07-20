@@ -1,501 +1,194 @@
-/* OPT-162992 START */
-((self) => {
+/* OPT-121482 START */
+Insider.__external.setAddToCartButtonModification153167 = (variationId) => { /* OPT-153167 */
     'use strict';
 
-    const isDesktop = Insider.browser.isDesktop();
-    const builderId = isDesktop ? 3576 : 3574;
-    const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
-    const isOfferPage = Insider.fns.hasParameter('/offer');
-    const isCategoryPage = Insider.systemRules.call('isOnCategoryPage');
-    const isProductPage = Insider.systemRules.call('isOnProductPage');
-    const isControlGroup = Insider.campaign.isControlGroup(Number(variationId));
-    const couponStorage = `ins-coupon-code-${ variationId }`;
-    const giftStorage = `ins-gift-storage-${ variationId }`;
+    const self = {}; /* OPT-153167 */
+    const builderId = Insider.campaign.getBuilderIdByVariationId(variationId); /* OPT-155244 */
+    const previewWrapper = `.ins-preview-wrapper-${ variationId }`;
+    const productId = 'ins-product-id';
+    const quantityChangedGoalId = 9;
+
+    const texts = {
+        minusButton: '&minus;',
+        starterQuantity: '1',
+        plusButton: '&plus;',
+    };
 
     const classes = {
-        badge: `ins-badge-${ variationId }`,
-        join: `sp-custom-${ variationId }-1`,
         style: `ins-custom-style-${ variationId }`,
-        wrapper: `ins-custom-wrapper-${ variationId }`,
-        header: `ins-custom-text-header-${ variationId }`,
-        notice: `ins-custom-text-notice-${ variationId }`,
-        modelData: 'data-modelcode',
-        positionRelative: `ins-element-position-relative-${ variationId }`,
-        addToCart: `ins-add-to-cart-${ variationId }`,
-        hidden: `ins-hidden-element-${ variationId }`,
-        infoWrapper: `ins-preview-wrapper-${ variationId }`,
-        backgroundUnset: `ins-background-unset-${ variationId }`,
-        productPageSecondAddToCart: `ins-second-add-to-cart-${ variationId }`,
-        addToCartBaseStyle: `ins-add-to-cart-base-style-${ variationId }`
+        wrapper: `ins-custom-item-counter-wrapper-${ variationId }`,
+        container: `ins-custom-item-counter-container-${ variationId }`,
+        quantityLabel: `ins-custom-item-counter-label-${ variationId }`,
+        quantityButtons: `ins-custom-item-counter-buttons-${ variationId }`,
+        minusButton: `ins-custom-item-counter-minus-button-${ variationId }`,
+        plusButton: `ins-custom-item-counter-plus-button-${ variationId }`,
     };
 
-    const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
-        createdSelector[key] = `.${ classes[key] }`, createdSelector
-    ), {
-        categoryPageAppendLocation: '.option-selector-v2__swiper-container',
-        categoryPageProducts: '.pd03-product-finder__content-item.pd03-product-finder__content-item-view.js-pfv2-product-card',
-        categoryPageProductTitle: '.pd03-product-card__product-name a',
-        productPageProductId: '.pd-info__sku',
-        productPageImage: '.first-image',
-        offerPageProduct: '.cmp-prd-card_item',
-        offerPageProductLink: '.cmp-prd-card_item-thbnail',
-        categoryPageAddToCartButton: '.cta.cta--contained.cta--black.js-cta-addon',
-        productPageAddToCartButton: '.tg-add-to-cart',
-        offerPageAddToCartButton: '.cta.cta--contained.cta--black.cmp-prd-card_cta-btn',
-        skipButton: '.ins-skip-button',
-        closeButton: '.ins-element-close-button',
-        popUpAddToCart: '.ins-custom-add-to-cart-button',
-        addCoupon: '.summary-total__btn.summary-total__btn--link.link.ng-star-inserted',
-        couponInput: '.cart-voucher.modal__container.ng-star-inserted input',
-        couponModal: '.modal',
-        couponSubmit: '.cart-voucher.modal__container.ng-star-inserted button[type="submit"]',
-        couponModalContainer: '.cart-voucher.modal__container.ng-star-inserted',
-        couponModalClose: '.modal__close',
-        appliedCoupon: '.summary-total__voucher.summary-total__voucher--last.ng-star-inserted'
+    const selectors = Object.keys(classes).reduce(function (createdSelector, key) {
+        createdSelector[key] = `.${ classes[key] }`;
+
+        return createdSelector;
+    }, {
+        buttonsWrapper: '.ins-action-buttons-wrapper',
+        addToCartButton: '.ins-add-product-to-cart-button',
+        addToCartWrapper: '[ins-product-id].ins-add-to-cart-wrapper',
+        wrapArea: '.ins-dynamic-wrap-area',
     });
 
-    const config = {
-        skuList: {
-            'QE98QN90DATXTK': {
-                giftProduct: 'HW-Q990D/TK',
-                paraCardAmount: '15,000'
-            },
-            'QE85QN900DTXTK': {
-                giftProduct: 'HW-Q990D/TK',
-                paraCardAmount: '15,000'
-            },
-            'QE75QN900DTXTK': {
-                giftProduct: 'HW-Q990D/TK',
-                paraCardAmount: '15,000'
-            },
-            'QE75QN800DTXTK': {
-                giftProduct: 'HW-Q990D/TK',
-                paraCardAmount: '15,000'
-            },
-            'QE65QN800DTXTK': {
-                giftProduct: 'HW-Q990D/TK',
-                paraCardAmount: '15,000'
-            },
-            'QE77S95DATXTK': {
-                giftProduct: 'HW-Q800D/TK',
-                paraCardAmount: '8,000'
-            },
-            'QE65S95DATXTK': {
-                giftProduct: 'HW-Q800D/TK',
-                paraCardAmount: '8,000'
-            },
-            'QE85QN90DATXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE75QN90DATXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE65QN90DATXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE55QN90DATXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE85QN85DBTXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE75QN85DBTXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE65QN85DBTXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE55QN85DBTXTK': {
-                giftProduct: 'HW-Q600C/TK',
-                paraCardAmount: '5,000'
-            },
-            'QE75LS03DAUXTK': {
-                giftProduct: 'HW-LS60D/TK',
-                paraCardAmount: '4,500'
-            },
-            'QE65LS03DAUXTK': {
-                giftProduct: 'HW-LS60D/TK',
-                paraCardAmount: '4,500'
-            },
-            'QE55LS03DAUXTK': {
-                giftProduct: 'HW-LS60D/TK',
-                paraCardAmount: '4,500'
-            },
-            'HW-Q990D/TK': {
-                giftProduct: '',
-                paraCardAmount: '2,500'
-            },
-            'HW-LS60D/TK': {
-                giftProduct: '',
-                paraCardAmount: '1,000'
-            }
-        },
-        texts: {
-            addToCart: 'Sepete Ekle',
-            buy: 'Satın Al'
-        },
-        urls: {
-            request: 'searchapi.samsung.com/'
+    self.init = () => {
+        if (variationId && !Insider.campaign.isControlGroup(variationId)) {
+            self.setProductQuantityContainer();
         }
     };
 
-    self.init = () => {
-        if (variationId) {
-            if (!isControlGroup) {
+    self.setProductQuantityContainer = () => {
+        Insider.fns.onElementLoaded(`${ previewWrapper } ${ selectors.addToCartWrapper }`, () => {
+            setTimeout(() => { /* OPT-152318 */
                 self.reset();
                 self.buildCSS();
-            }
-
-            self.handlePageContent();
-            self.setEvents();
-        }
+                self.buildHTML();
+                self.preventDefaultAddToCartButtons();
+                self.setEvents();
+                /* self.setProductQuantityContainer(); OPT-152318 */
+            }, 750);
+        }).listen();
     };
 
     self.reset = () => {
-        const { style, wrapper, positionRelative: positionRelativeSelector, addToCart } = selectors;
-        const { positionRelative } = classes;
+        const { style, wrapper } = selectors;
 
-        Insider.dom(`${ style }, ${ wrapper }, ${ addToCart }`).remove();
-        Insider.dom(positionRelativeSelector).removeClass(positionRelative);
+        Insider.dom(`${ style }, ${ wrapper }`).remove();
     };
 
     self.buildCSS = () => {
-        const { wrapper, addToCart, hidden, backgroundUnset, productPageSecondAddToCart,
-            addToCartBaseStyle } = selectors;
-        let customStyle =
-        `${ addToCart } {
-            color: white;
-            text-align: center;
-            border-radius: 30px;
-            transition: background-color 0.3s ease;
-            order: -1;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        ${ addToCart }:hover {
-            background-color: #595959;
-        }
-        ${ hidden } {
-            display: none !important;
-        }
-        ${ backgroundUnset } {
-            background-color: unset !important;
-        }
-        ${ addToCartBaseStyle } {
-            background-color: black;
-            color: white;
-            text-align: center;
-            border-radius: 30px;
-            transition: background-color 0.3s ease;
-            order: -1;
-            font-weight: 550;
-            cursor: pointer;
-        }
-        @media (min-width: 1200px) {
-            ${ addToCart } {
-                height: 4vh !important;
-                font-size: 14px;
-            }
-        }
-        @media (max-width: 1200px) {
-            ${ addToCart } {
-                height: 47px !important;
-                width: 68% !important;
-                margin-left: 16% !important;
-                width: 60%;
-                margin-left: 20%;
-                font-size: 17px;
-            }
-            ${ wrapper } {
-                margin: unset !important;
-                border-radius: 25vh 25vh 0 0;
-            }
-        }`;
+        const { wrapper, container, quantityButtons, quantityLabel } = selectors;
 
-        if (isCategoryPage) {
-            customStyle +=
-            `${ addToCart } {
-                background-color: black;
-                height: 5vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 100% !important;
-                margin-left: unset !important;
-            }
-            @media (max-width: 1200px) {
-                ${ addToCart } {
-                    font-size: 1.8vh !important;
-                }
-            }`;
-        } else if (isProductPage) {
-            customStyle +=
-            `@media (min-width: 1200px) {
-                ${ addToCart } {
-                    font-size: 15px;
-                }
-                ${ productPageSecondAddToCart } {
-                    width: 40% !important;
-                    margin-left: 30% !important;
-                }
-            }
-            ${ addToCart } {
-                font-size: 14px;
-                background-color: #007AFF;
-                padding: 1.5vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            ${ addToCart }:hover {
-                background-color: #2189ff !important;
-            }
-            @media (max-width: 1200px) {
-                ${ addToCart } {
-                    font-size: 17px !important;
-                    padding: 1.5vh;
-                    width: 100% !important;
-                    border-radius: 35px;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    width: 100%;
-                }
-                ${ productPageSecondAddToCart } {
-                    margin-left: 10% !important;
-                    width: 80% !important;
-                }
-            }`;
-        } else if (isOfferPage) {
-            customStyle +=
-            `${ addToCart } {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                border-radius: 30px !important;
-                width: ${ isDesktop ? '70% !important' : '60% !important' };
-                margin-left: ${ isDesktop ? '15% !important' : '20% !important' };
-                height: ${ isDesktop ? '4.5vh !important' : '5vh !important' }
-            }}`;
+        const customStyle =
+        `${ previewWrapper } ${ wrapper } {
+            display: flex !important;
+            border: 1px solid #EC008C !important;
+            border-radius: 3px !important;
+            margin-right: 10px;
+            height: 36px;
         }
+        ${ previewWrapper } ${ container } {
+            font-weight: 600 !important;
+            font-size: medium !important;
+            display: flex;
+            color: #EC008C !important;
+        }
+        ${ previewWrapper } ${ quantityLabel } {
+            height: 34px !important;
+            width: 30px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: default;
+        }
+        ${ previewWrapper } ${ quantityButtons } {
+            height: 34px;
+            width: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer !important;
+        }`;
 
         Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
     };
 
-    self.handlePageContent = () => {
-        let pageType;
-        const pageHandlers = {
-            product: self.handleProductPage,
-            category: self.handleCategoryPage,
-            offer: self.handleOfferPage,
-            cart: self.handleCheckoutPage
-        };
+    self.buildHTML = () => {
+        const { wrapper, container, quantityButtons, minusButton, quantityLabel, plusButton } = classes;
+        const { minusButton: minusButtonText, starterQuantity, plusButton: plusButtonText } = texts;
+        const { buttonsWrapper, wrapArea } = selectors;
 
-        if (isOfferPage) {
-            pageType = 'offer';
-        } else if (isCategoryPage) {
-            pageType = 'category';
-        } else if (isProductPage) {
-            pageType = 'product';
-        } else if (Insider.systemRules.call('isOnCartPage')) {
-            pageType = 'cart';
-        }
+        const outerHTML =
+        `<div class="${ wrapper }">
+            <div class="${ container }">
+                <div class="${ quantityButtons } ${ minusButton }">
+                    ${ minusButtonText }
+                </div>
+                <div class="${ quantityLabel }">
+                    ${ starterQuantity }
+                </div>
+                <div class="${ quantityButtons } ${ plusButton }">
+                    ${ plusButtonText }
+                </div>
+            </div>
+        </div>`;
 
-        if (pageType) {
-            pageHandlers[pageType]();
+        Insider.dom(`${ previewWrapper } ${ buttonsWrapper }`).prepend(outerHTML)
+            .css('display', 'flex', 'important');
 
-            Insider.utils.opt.ajaxListener((url, response, method) => {
-                if (method === 'GET' && Insider.fns.has(url, config.urls.request)) {
-                    setTimeout(() => {
-                        pageHandlers[pageType]();
-                    }, 500);
-                }
-            });
-        }
+        Insider.dom(`${ previewWrapper } ${ wrapArea }`).css('height', '210px', 'important');
     };
 
-    self.handleOfferPage = () => {
-        const { addToCart, hidden, positionRelative, addToCartBaseStyle } = classes;
-        const { offerPageProduct, offerPageProductLink, addToCart: addToCartSelector,
-            offerPageAddToCartButton } = selectors;
+    self.preventDefaultAddToCartButtons = () => {
+        const { addToCartWrapper, buttonsWrapper } = selectors;
 
-        Insider.dom(addToCartSelector).remove();
+        Insider.dom(`${ previewWrapper } ${ addToCartWrapper }`).accessNodes((element) => {
+            const $element = Insider.dom(element);
 
-        Insider.dom(offerPageProduct).accessNodes((node) => {
-            const productId = Insider.dom(node).find(offerPageProductLink).attr('title');
-            const $partnerAddToCart = Insider.dom(node).find(offerPageAddToCartButton);
-            const $node = Insider.dom(node);
-
-            if (config.skuList[productId] && !isControlGroup) {
-                const buttonHtml = `
-                <div class="${ addToCart } ${ addToCartBaseStyle }" data-ins-product-id="${ productId }">
-                    ${ config.texts.addToCart }
-                </div>`;
-
-                $node.addClass(positionRelative);
-                $partnerAddToCart.after(buttonHtml);
-                $partnerAddToCart.addClass(hidden);
-            }
+            $element.closest(buttonsWrapper).attr(productId, $element.attr(productId));
+            $element.removeAttr(productId);
         });
-    };
-
-    self.handleCategoryPage = () => {
-        const { modelData, addToCart, hidden, addToCartBaseStyle } = classes;
-        const { categoryPageProducts, categoryPageProductTitle, categoryPageAddToCartButton,
-            addToCart: addToCartSelector } = selectors;
-
-        Insider.dom(addToCartSelector).remove();
-
-        Insider.dom(categoryPageProducts).accessNodes((node) => {
-            const $node = Insider.dom(node).find(categoryPageProductTitle);
-            const productId = $node.attr(modelData);
-            const product = config.skuList[productId];
-            const $partnerAddToCart = Insider.dom(node).find(categoryPageAddToCartButton);
-
-            if (product && !isControlGroup) {
-                const buttonHtml = `
-                <div class="${ addToCart } ${ addToCartBaseStyle }"
-                    data-ins-product-id="${ productId }">${ config.texts.addToCart }</div>`;
-
-                $partnerAddToCart.after(buttonHtml);
-                $partnerAddToCart.addClass(hidden);
-            }
-        });
-    };
-
-    self.handleProductPage = () => {
-        const { addToCart, hidden, productPageSecondAddToCart, addToCartBaseStyle } = classes;
-        const { productPageAddToCartButton, addToCart: addToCartSelector } = selectors;
-        const currentProductId = Insider.systemRules.call('getCurrentProduct').id;
-        const $productPageAddToCartButton = Insider.dom(productPageAddToCartButton);
-
-        if (config.skuList[currentProductId] && !isControlGroup) {
-            const buttonHtml = `
-            <div class="${ addToCart } ${ addToCartBaseStyle }"
-                data-ins-product-id="${ currentProductId }">${ config.texts.buy }</div>`;
-
-            $productPageAddToCartButton.addClass(hidden).after(buttonHtml);
-            Insider.dom(addToCartSelector).last().addClass(productPageSecondAddToCart);
-        }
-    };
-
-    self.handleCheckoutPage = () => {
-        const couponCode = Insider.storage.localStorage.get(couponStorage);
-        const isCouponApplied = Insider.dom(selectors.appliedCoupon).length > 0;
-
-        if (couponCode && Insider.systemRules.call('isOnCartPage') && !isCouponApplied) {
-            if (!isControlGroup) {
-                setTimeout(() => {
-                    self.submitCouponCode(couponCode);
-                }, 500);
-            }
-
-            self.showCampaign();
-        }
-    };
-
-    self.submitCouponCode = (couponCode) => {
-        const { backgroundUnset, hidden } = classes;
-        const { addCoupon, couponInput, couponModal, couponSubmit, couponModalContainer, couponModalClose } = selectors;
-        const $addCouponButton = Insider.dom(addCoupon);
-
-        const inputEvent = new Event('input', {
-            bubbles: true,
-            cancelable: true,
-        });
-
-        const changeEvent = new Event('change', {
-            bubbles: true,
-            cancelable: true,
-        });
-
-        $addCouponButton.click();
-
-        const $couponModal = Insider.dom(couponModal);
-        const $couponModalContainer = Insider.dom(couponModalContainer);
-        const $couponInput = Insider.dom(couponInput);
-        const $couponSubmit = Insider.dom(couponSubmit);
-        const $couponInputNode = $couponInput.getNode(0);
-
-        $couponModal.addClass(backgroundUnset);
-        $couponModalContainer.addClass(hidden);
-        $couponInput.val(couponCode);
-        $couponInputNode.dispatchEvent(inputEvent);
-        $couponInputNode.dispatchEvent(changeEvent);
-        $couponSubmit.click();
-
-        setTimeout(() => {
-            Insider.dom(couponModalClose).click();
-        }, 1000);
-    };
-
-    self.showCampaign = () => {
-        Insider.campaign.info.show(variationId);
     };
 
     self.setEvents = () => {
-        const { addToCart, skipButton, infoWrapper, closeButton, popUpAddToCart } = selectors;
-        const { skuList } = config;
-        const method = isDesktop ? 'click' : 'mouseup';
-        const couponCode = 'INSIDERTESTTR';
+        const { addToCartButton, buttonsWrapper, quantityLabel, quantityButtons } = selectors;
 
-        Insider.eventManager.once(`click.track:add:to:cart:clicks:${ variationId }`, addToCart, async (event) => {
-            const productId = Insider.dom(event.target).data('ins-product-id');
-            const baseUrl = 'https://shop.samsung.com/tr/ng/p4v1/addCart?productCode=#ID&quantity=1&insTrigger=true';
-            const url = baseUrl.replace('#ID', productId);
+        Insider.eventManager.once(`click.add:to:cart:with:quantity:${ variationId }`,
+            `${ previewWrapper } ${ addToCartButton }`, function () {
+                const $buttonsWrapper = Insider.dom(this).closest(buttonsWrapper);
+                const currentProductId = $buttonsWrapper.attr(productId) || '';
+                const currentQuantity = Number($buttonsWrapper.find(quantityLabel).text()); /* OPT-152318 */
 
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json, text/javascript, */*; q=0.01',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${ response.statusText }`);
+                if (currentProductId && currentQuantity) {
+                    self.addToCartWithQuantity(currentProductId, currentQuantity);
                 }
-
-                Insider.storage.localStorage.set({
-                    name: giftStorage,
-                    value: { product: skuList[productId]?.giftProduct ?? '', amount: skuList[productId]?.paraCardAmount
-                      ?? '' }
-                });
-
-                if (!isControlGroup) {
-                    Insider.campaign.info.clearVisibleCampaignsByType('ON-PAGE');
-                    Insider.campaign.webInfo.clearVisibleCampaignsByType('ON-PAGE');
-                }
-
-                self.showCampaign();
-            } catch (error) {
-                Insider.logger.log(`Error: ${ error.message }`);
-            }
-        });
-
-        Insider.eventManager.once(`${ method }.handle:skip:button:${ variationId }`, skipButton, () => {
-            Insider.dom(infoWrapper).find(closeButton).click();
-        });
-
-        Insider.eventManager.once(`${ method }.handle:add:to:cart:button:${ variationId }`, popUpAddToCart, () => {
-            Insider.storage.localStorage.set({
-                name: couponStorage,
-                value: couponCode
             });
 
-            Insider.dom(infoWrapper).find(closeButton).click();
+        Insider.eventManager.once(`click.change:quantity:${ variationId }`, quantityButtons, function () {
+            const $this = Insider.dom(this);
+            const $quantityLabel = $this.siblings(quantityLabel);
+            const currentQuantity = Number($quantityLabel.text());
+
+            if ($this.hasClass(classes.minusButton)) {
+                if (currentQuantity > 1) {
+                    $quantityLabel.text(currentQuantity - 1);
+                }
+            } else {
+                if (currentQuantity < 10) {
+                    $quantityLabel.text(currentQuantity + 1);
+                }
+            }
+
+            self.sendCustomGoal(quantityChangedGoalId);
         });
     };
 
+    self.addToCartWithQuantity = (currentProductId, currentQuantity) => {
+        if (Insider.fns.isFunction(Insider.__external.SpAddToCartWithQuantity121482)) {
+            Insider.__external.SpAddToCartWithQuantity121482(currentProductId, currentQuantity);
+        } else {
+            Insider.logger.log('SpAddToCartWithQuantity121482 is not a function');
+
+            Insider.systemRules.call('spAddToCart').addToBasket(currentProductId);
+        }
+    };
+
+    self.sendCustomGoal = (goalId) => {
+        if (Insider.fns.isFunction(Insider.__external.sendCustomGoal)) {
+            Insider.__external.sendCustomGoal(builderId, goalId, true);
+        } else {
+            Insider.logger.log('sendCustomGoal is not a function');
+        }
+    };
+
     self.init();
-})({});
-/* OPT-162992 END */
+};
+
+true;
+/* OPT-121482 END */

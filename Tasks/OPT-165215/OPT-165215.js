@@ -26,13 +26,13 @@
         fitTypeBoxFt00: '.fit-type-box._ft00',
         realSizeguideBox: '.real-sizeguide-box',
         layerBtnBox: '.layer-btn-box',
+        viewToggleBox: '.view-toggle-box',
         styleRecommendBox: '.style-recommend-box',
         goodsSetupBox: '.goods-setup-box',
         recommendBoxThumb02: '.recommend-box._thumb02',
         topImgBox: '.top-img-box',
         rvBanBox: '.rv-ban-box',
         hd: '.hd .toggle__btn',
-        viewToggleBox: '.view-toggle-box'
     });
 
     self.init = () => {
