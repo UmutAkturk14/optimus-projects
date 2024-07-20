@@ -42,4 +42,4 @@
 })({});
 /* OPT-160439 END */
 
-return !!Insider.storage.localStorage.get('ins-status-abandoned-subscription-161758')
+return !!Insider.storage.localStorage.get('ins-status-abandoned-subscription-161758');
