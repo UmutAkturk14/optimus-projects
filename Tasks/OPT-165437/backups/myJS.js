@@ -6,12 +6,18 @@ const templateConfig = {
     classes: {
         hideRecommenderClass: 'ins-display-none',
         /* OPT-165437 START */
-        hide: 'ins-hide',
+        hide: 'ins-invisible',
         shadeWrapper: 'ins-shade-wrapper',
         shadeButton: 'ins-shade-button',
         reviewWrapper: 'ins-review-wrapper',
         rating: 'ins-rating',
         reviewCountWrapper: 'review-count-wrapper',
+        reviewCount: 'ins-review-count',
+        ratingOn: 'ins-rating-on',
+        ratingOff: 'ins-rating-off',
+        pricePrefix: 'ins-price-prefix',
+        loaderWrapper: 'ins-loader-wrapper',
+        restrictedCountry: 'ins_restricted_country'
         /* OPT-165437 END */
     },
     selectors: {
@@ -33,11 +39,12 @@ const templateConfig = {
         /* OPT-165437 START */
         breadcrumbItem: 'e2-breadcrumb span.breadcrumb-item',
         itemTitle: '#ins-layout-block-wrapper-16401899775512',
+        discountContainer: '#wrap-price-172189895363001undefined',
+        pricePrefix: '.ins-price-prefix',
         ratingOn: '.ins-rating-on',
-        promotionText: '.ins-promotion-text',
-        reviewCount: '.ins-review-count',
-        reviewCountWrapper: '.review-count-wrapper',
-        memberPriceWrapper: '.ins-member-price-wrapper'
+        shadeWrapper: '.ins-shade-wrapper',
+        addToCartText: '.add-to-cart-text',
+        addProductToCart: '.ins-add-product-to-cart-button, .ins-add-to-cart-wrapper'
         /* OPT-165437 END */
     },
     settings: {
@@ -52,7 +59,8 @@ const templateConfig = {
         /* OPT-110316 START */
         getEndpoint: {
             self() {
-                const { breadcrumbItem } = templateConfig.selectors;
+                const { breadcrumbItem } = templateConfig.selectors; /* OPT-165437 */
+
                 const categories = [];
 
                 Insider.dom(breadcrumbItem).each(function (index, item) {
@@ -66,19 +74,22 @@ const templateConfig = {
         },
         fillGeneralProductContent: {
             after(item) {
-                const { breadcrumbItem, itemTitle, ratingOn: ratingOnSelector, promotionText, reviewCount, reviewCountWrapper } = templateConfig.selectors;
-                const { hide, shadeWrapper, shadeButton, reviewWrapper, rating, reviewCountWrapper,
-                    reviewCount, ratingOn, ratingOff } = templateConfig.classes;
+                const { itemTitle, discountContainer, ratingOn: ratingOnSelector,
+                    shadeWrapper: shadeWrapperSelector, addToCartText, addProductToCart,
+                    shadeButton: shadeButtonSelector } = templateConfig.selectors;
+                const { hide, shadeWrapper, shadeButton, reviewWrapper, rating, reviewCountWrapper, reviewCount,
+                    ratingOn, ratingOff, pricePrefix, restrictedCountry } = templateConfig.classes;
                 const { url, product_attributes } = item;
-                const { color_option_count, review_count, star_rating, promotion_text } = product_attributes;
+                const { color_option_count, review_count, star_rating } = product_attributes;
 
                 const $itemContainer = this.global.itemContainer;
+                const pricePrefixText = 'was';
 
-                $itemContainer.find(`.${ shadeWrapper }, .${ reviewWrapper }`).remove();
+                $itemContainer.find(`.${ shadeWrapper }, .${ reviewWrapper }, .${ pricePrefix }`).remove();
 
                 const shadeHTML =
-                `<div class="${ shadeWrapper }">
-                    <div class="${ shadeButton }"
+                `<div class="${ shadeWrapper } ${ hide }">
+                    <div class="${ shadeButton }">
                         <a href="${ url }">
                             ${ color_option_count } shades
                         </a>
@@ -95,60 +106,35 @@ const templateConfig = {
                     <span class="${ reviewCount }">(${ review_count })</span>
                 </a>`;
 
-                $itemContainer.find(itemTitle).after(shadeHTML).after(reviewHTML);
+                const pricePrefixHTML =
+                `<span class="${ pricePrefix }">${ pricePrefixText }</span>`;
 
-                debugger;
-
-                const shadeButtonSelector = '.ins-shade-button';
-                const memberPrice = item?.product_attributes?.member_price ?? ''; /* OPT-155246 */
+                $itemContainer.find(itemTitle).after(reviewHTML).after(shadeHTML);
+                $itemContainer.find(discountContainer).before(pricePrefixHTML);
 
                 $itemContainer.find(ratingOnSelector)
                     .css('width', `${ (star_rating / 5) * 100 || 0 }%`);
-                $itemContainer.find('.ins-promotion-text')
-                    .text(promotion_text || '');
-                $itemContainer.find('.ins-review-count')
-                    .text(`(${ review_count || 0 })`);
-                $itemContainer.find('.ins-promotion-wrapper, .ins-rating, .review-count-wrapper')
-                    .attr('href', url);
-                $itemContainer.find('.ins-member-price-wrapper').text(memberPrice); /* OPT-155246 */
 
                 if (Number(item.product_attributes.color_option_count) > 0) {
-                    $itemContainer.find(shadeButtonSelector)
-                        .removeClass('ins-hide');
-                    $itemContainer.find(`${ shadeButtonSelector } a`)
-                        .text(`${ item.product_attributes.color_option_count || 0 } shades`);
-                    $itemContainer.find(`${ shadeButtonSelector } a`)
-                        .attr('href', item.url);
-                    $itemContainer.find('.ins-review-wrapper')
-                        .before($itemContainer.find(shadeButtonSelector).parent());/* OPT-110316 */
+                    $itemContainer.find(shadeWrapperSelector)
+                        .removeClass(hide);
                 } else {
                     $itemContainer.find(shadeButtonSelector)
-                        .addClass('ins-hide');
-                    $itemContainer.find('.ins-promotion-wrapper')
-                        .after($itemContainer.find(shadeButtonSelector).parent()); /* OPT-110316 */
-                }
-
-                if (item.product_attributes.is_rrp_price) {
-                    $itemContainer.find('.ins-price-prefix').text('RRP');
-                } else {
-                    $itemContainer.find('.ins-price-prefix').text('was');
+                        .addClass(hide);
                 }
 
                 if (item.product_attributes.is_restricted_country) {
-                    $itemContainer.find('.add-to-cart-text')
+                    $itemContainer.find(addToCartText)
                         .text('Not for sale in selected Country');
-                    $itemContainer.find('.ins-add-product-to-cart-button, .ins-add-to-cart-wrapper')
-                        .addClass('ins_restricted_country');
+                    $itemContainer.find(addProductToCart)
+                        .addClass(restrictedCountry);
                 } else {
-                    $itemContainer.find('.add-to-cart-text')
-                        .text('Add to basket');
-                    $itemContainer.find('.ins-add-product-to-cart-button, .ins-add-to-cart-wrapper')
-                        .removeClass('ins_restricted_country');
+                    $itemContainer.find(addProductToCart)
+                        .removeClass(restrictedCountry);
                 }
             }
         }
         /* OPT-110316 END */
-
     }
     /* OPT-65906 END */
 };
@@ -318,3 +304,7 @@ if (typeof Insider.campaign.smartRecommender === 'undefined') {
 }
 
 Insider.eventManager.on(`framelessInited${ camp.id }`, templateInit);
+
+
+
+
