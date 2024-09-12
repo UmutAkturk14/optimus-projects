@@ -4,6 +4,10 @@
 
     const builderId = Insider.browser.isDesktop() ? 49 : 50;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
+    /* OPT-166022 START */
+    let isDisplayed = false;
+    let isHovered = false;
+    /* OPT-166022 END */
 
     const classes = {
         style: `ins-custom-style-${ variationId }`,
@@ -13,12 +17,17 @@
         closeButton: `ins-close-button-${ variationId }`,
         attributeDiv: `ins-attribute-div-${ variationId }`, /* OPT-165686 */
         goal: `sp-custom-${ variationId }-1`,
+        hide: `ins-custom-hidden-element-${ variationId }` /* OPT-166022 */
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
-        appendLocation: '.payment-widget__confirm'
+        /* OPT-166022 START */
+        appendLocation: '.payment-widget__confirm:last',
+        flightItem: 'ke-revenue-flight-item',
+        flightPrice: '.flight-n__price-num'
+        /* OPT-166022 END */
     });
 
     const config = {
@@ -35,7 +44,7 @@
                 fontSize: '14px',
                 fontWeight: 'normal',
                 fontFamily: 'Noto Sans',
-                backgroundColor: '#8BE0F8',
+                backgroundColor: '#E6F9FF',
                 boxShadow: '0 4px 0 0 rgba(0, 0, 0, 0.1)'
             }
         },
@@ -44,8 +53,8 @@
 
     self.init = () => {
         if (variationId && self.checkIO() && !Insider.storage.localStorage.get(config.storageName)) { /* OPT-164192 */
-            //self.reset();
-            self.listenScroll();
+            // self.reset();
+            self.checkCampaignEligibility(); /* OPT-166022 */
         }
     };
 
@@ -60,26 +69,30 @@
     };
 
     self.reset = () => {
-        const { style, wrapper } = selectors;
+        const { style, attributeDiv } = selectors;
 
-        Insider.dom(`${ style }, ${ wrapper }`).remove();
+        Insider.dom(`${ style }, ${ attributeDiv }`).remove();
     };
 
-    self.listenScroll = () => {
-        if (!Insider.campaign.isControlGroup(variationId)) {
-            /* OPT-165686 START */
-            self.buildSpecialHTML();
+    /* OPT-166022 START */
+    self.checkCampaignEligibility = () => {
+        const { flightItem, flightPrice, attributeDiv } = selectors;
 
-            if (Insider.systemRules.call('isOnProductPage')) {
-                /* OPT-165686 END */
-                self.buildCSS();
-                self.buildHTML();
-                self.setEvents();
+        Insider.eventManager.once(`click.track:flight:item:clicks:${ variationId }`, flightItem, (event) => {
+            const $flight = Insider.dom(event.target);
+
+            if ($flight.find(flightPrice).exists() && !isDisplayed) {
+                self.showAndHideCampaign();
+
+                Insider.fns.onElementLoaded(attributeDiv, () => {
+                    const $attributeDiv = Insider.dom(attributeDiv);
+
+                    $flight.closest(flightItem).append($attributeDiv);
+                }).listen();
             }
-        }
-
-        Insider.campaign.custom.show(variationId);
+        });
     };
+    /* OPT-166022 END */
 
     /* OPT-165686 START */
     self.buildSpecialHTML = () => {
@@ -95,7 +108,7 @@
     /* OPT-165686 END */
 
     self.buildCSS = () => {
-        const { style, tooltipContainer, wrapper, closeButton, alertIconWrapper } = selectors; /* OPT-161513 */
+        const { style, tooltipContainer, wrapper, closeButton, alertIconWrapper, hide } = selectors; /* OPT-166022 */
         const { fontColor, fontSize, fontWeight, fontFamily, backgroundColor, boxShadow } = config.tooltip.design;
 
         const customStyle =
@@ -106,14 +119,14 @@
         }
         /* OPT-161513 END */
         ${ wrapper }  {
-            position: relative;
             bottom: 96px;
+            z-index: 9;
             /* OPT-163185 START */
             right: 50%;
             transform: translateX(50%);
             width: auto;
             /* OPT-163185 END */
-            position: absolute;
+            position: fixed; /* OPT-166022 */
             /* OPT-161513 START */
             height: 48px;
             justify-content: space-between;
@@ -152,7 +165,13 @@
             background-color: ${ backgroundColor };
             border: none;
             /* OPT-165686 END */
+            cursor: pointer; /* OPT-166022 */
         }
+        /* OPT-166022 START */
+        ${ hide } {
+            display: none !important;
+        }
+        /* OPT-166022 END */
         @media only screen and (max-width: 1050px) {
             ${ wrapper } {
                 /* OPT-163185 START */
@@ -216,7 +235,12 @@
     };
 
     self.setEvents = () => {
-        Insider.eventManager.once(`click.close:button:${ variationId }`, selectors.closeButton, () => {
+        /* OPT-166022 START */
+        const { closeButton, wrapper } = selectors;
+        const { hide } = classes;
+        /* OPT-166022 END */
+
+        Insider.eventManager.once(`click.close:button:${ variationId }`, closeButton, () => {
             Insider.utils.opt.sendCustomGoal(builderId, 2, true);
 
             /* OPT-164192 START */
@@ -227,9 +251,56 @@
             });
             /* OPT-164192 END */
 
-            self.reset();
+            Insider.dom(wrapper).addClass(hide); /* OPT-166022 */
         });
     };
+
+    /* OPT-166022 START */
+    self.showAndHideCampaign = () => {
+        const { wrapper } = selectors;
+        const { hide } = classes;
+
+        if (!Insider.campaign.isControlGroup(variationId)) {
+            self.buildSpecialHTML();
+            self.buildCSS();
+            self.buildHTML();
+            self.setEvents();
+
+        }
+
+        Insider.campaign.custom.show(variationId);
+
+        self.checkHoverStatus();
+
+        setTimeout(() => {
+            if (!isHovered) {
+                Insider.dom(wrapper).addClass(hide);
+            } else {
+                const $wrapper = document.querySelector(wrapper);
+
+                $wrapper.addEventListener('mouseleave', Insider.fns.throttle(() => {
+                    Insider.dom(wrapper).addClass(hide);
+                }, 200));
+            }
+        }, 3000);
+
+        isDisplayed = true;
+    };
+
+    self.checkHoverStatus = () => {
+        const { wrapper } = selectors;
+
+        const $wrapper = document.querySelector(wrapper);
+
+        $wrapper.addEventListener('mouseenter', Insider.fns.throttle(() => {
+            isHovered = true;
+        }, 200));
+
+        $wrapper.addEventListener('mouseleave', Insider.fns.throttle(() => {
+            isHovered = false;
+        }, 200));
+    };
+    /* OPT-166022 END */
 
     self.init();
 })({});

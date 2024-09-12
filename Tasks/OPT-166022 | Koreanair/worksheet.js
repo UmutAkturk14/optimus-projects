@@ -2,8 +2,12 @@
 ((self) => {
     'use strict';
 
-    const builderId = Insider.browser.isDesktop() ? 49 : 50;
+    const builderId = Insider.browser.isDesktop() ? 51 : 52;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
+    /* OPT-166022 START */
+    let isDisplayed = false;
+    let isHovered = false;
+    /* OPT-166022 END */
 
     const classes = {
         style: `ins-custom-style-${ variationId }`,
@@ -13,12 +17,17 @@
         closeButton: `ins-close-button-${ variationId }`,
         attributeDiv: `ins-attribute-div-${ variationId }`, /* OPT-165686 */
         goal: `sp-custom-${ variationId }-1`,
+        hide: `ins-custom-hidden-element-${ variationId }` /* OPT-166022 */
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
-        appendLocation: '.payment-widget__confirm'
+        /* OPT-166022 START */
+        appendLocation: '.payment-widget__confirm:last',
+        flightItem: 'ke-revenue-flight-item',
+        flightPrice: '.flight-n__price-num'
+        /* OPT-166022 END */
     });
 
     const config = {
@@ -26,7 +35,7 @@
         alertIcon: '<svg fill=none height=24 viewBox="0 0 24 24"width=24 xmlns=http://www.w3.org/2000/svg><g clip-path=url(#clip0_4859_7207)><path d="M3.75 12C3.75 7.45108 7.45194 3.75 12 3.75C16.5481 3.75 20.25 7.45108 20.25 12C20.25 16.5485 16.548 20.25 12 20.25C7.45197 20.25 3.75 16.5485 3.75 12Z"stroke=#00256C stroke-width=1.5 /><path d="M12.436 14.156H11.008L10.708 8.432H12.736L12.436 14.156ZM10.684 16.16C10.684 15.792 10.784 15.536 10.984 15.392C11.184 15.24 11.428 15.164 11.716 15.164C11.996 15.164 12.236 15.24 12.436 15.392C12.636 15.536 12.736 15.792 12.736 16.16C12.736 16.512 12.636 16.768 12.436 16.928C12.236 17.08 11.996 17.156 11.716 17.156C11.428 17.156 11.184 17.08 10.984 16.928C10.784 16.768 10.684 16.512 10.684 16.16Z"fill=#00256C /></g><defs><clipPath id=clip0_4859_7207><rect fill=white height=24 width=24 /></clipPath></defs></svg>',
         closeButtonIcon: '<svg fill=none height=16 viewBox="0 0 16 16"width=16 xmlns=http://www.w3.org/2000/svg><path d="M2.6665 2.66667L12.9279 13.3333"stroke=#00256C stroke-linecap=square stroke-width=1.5 /><path d="M12.9282 2.66667L2.66683 13.3333"stroke=#00256C stroke-linecap=square stroke-width=1.5 /></svg>',
         /* OPT-161513 END */
-        scrollLimit: (document?.documentElement?.scrollTop ?? 0) / 2, //Insider.dom('body').height() / 2
+        scrollLimit: (document?.documentElement?.scrollTop ?? 0) / 2,
         scrollEventName: `scroll.change:height:${ variationId }`,
         tooltip: {
             text: '회원으로 진행하고 마일리지 적립하세요!', /* OPT-161513 */
@@ -35,7 +44,7 @@
                 fontSize: '14px',
                 fontWeight: 'normal',
                 fontFamily: 'Noto Sans',
-                backgroundColor: '#8BE0F8',
+                backgroundColor: '#E6F9FF',
                 boxShadow: '0 4px 0 0 rgba(0, 0, 0, 0.1)'
             }
         },
@@ -44,8 +53,8 @@
 
     self.init = () => {
         if (variationId && self.checkIO() && !Insider.storage.localStorage.get(config.storageName)) { /* OPT-164192 */
-            //self.reset();
-            self.listenScroll();
+            // self.reset();
+            self.checkCampaignEligibility(); /* OPT-166022 */
         }
     };
 
@@ -60,26 +69,30 @@
     };
 
     self.reset = () => {
-        const { style, wrapper } = selectors;
+        const { style, attributeDiv } = selectors;
 
-        Insider.dom(`${ style }, ${ wrapper }`).remove();
+        Insider.dom(`${ style }, ${ attributeDiv }`).remove();
     };
 
-    self.listenScroll = () => {
-        if (!Insider.campaign.isControlGroup(variationId)) {
-            /* OPT-165686 START */
-            self.buildSpecialHTML();
+    /* OPT-166022 START */
+    self.checkCampaignEligibility = () => {
+        const { flightItem, flightPrice, attributeDiv } = selectors;
 
-            if (Insider.systemRules.call('isOnProductPage')) {
-                /* OPT-165686 END */
-                self.buildCSS();
-                self.buildHTML();
-                self.setEvents();
+        Insider.eventManager.once(`click.track:flight:item:clicks:${ variationId }`, flightItem, (event) => {
+            const $flight = Insider.dom(event.target);
+
+            if ($flight.find(flightPrice).exists() && !isDisplayed) {
+                self.showAndHideCampaign();
+
+                Insider.fns.onElementLoaded(attributeDiv, () => {
+                    const $attributeDiv = Insider.dom(attributeDiv);
+
+                    $flight.closest(flightItem).append($attributeDiv);
+                }).listen();
             }
-        }
-
-        Insider.campaign.custom.show(variationId);
+        });
     };
+    /* OPT-166022 END */
 
     /* OPT-165686 START */
     self.buildSpecialHTML = () => {
@@ -95,7 +108,7 @@
     /* OPT-165686 END */
 
     self.buildCSS = () => {
-        const { style, tooltipContainer, wrapper, closeButton, alertIconWrapper } = selectors; /* OPT-161513 */
+        const { style, tooltipContainer, wrapper, closeButton, alertIconWrapper, hide } = selectors; /* OPT-166022 */
         const { fontColor, fontSize, fontWeight, fontFamily, backgroundColor, boxShadow } = config.tooltip.design;
 
         const customStyle =
@@ -106,14 +119,13 @@
         }
         /* OPT-161513 END */
         ${ wrapper }  {
-            position: relative;
             bottom: 96px;
             /* OPT-163185 START */
             right: 50%;
             transform: translateX(50%);
             width: auto;
             /* OPT-163185 END */
-            position: absolute;
+            position: fixed; /* OPT-166022 */
             /* OPT-161513 START */
             height: 48px;
             justify-content: space-between;
@@ -128,6 +140,7 @@
             font-family: ${ fontFamily };
             background-color: ${ backgroundColor };
             /* box-shadow: ${ boxShadow }; OPT-161513 */
+			padding-left : 20px; /*CSM EDITED*/
         }
         /* OPT-161513 START */
         ${ alertIconWrapper } {
@@ -153,6 +166,11 @@
             border: none;
             /* OPT-165686 END */
         }
+        /* OPT-166022 START */
+        ${ hide } {
+            display: none !important;
+        }
+        /* OPT-166022 END */
         @media only screen and (max-width: 1050px) {
             ${ wrapper } {
                 /* OPT-163185 START */
@@ -197,7 +215,6 @@
 
         const outerHTML =
         `<div class="${ wrapper } ${ goal }">
-            ${ Insider.browser.isMobile() ? '' : `<div class="${ alertIconWrapper }">${ alertIcon }</div>` }
             <div class="${ tooltipContainer }">${ tooltip.text }</div>
             <!-- OPT-165686 START -->
             <button type="button" class="${ closeButton }">
@@ -206,6 +223,8 @@
             </button>
             <!-- OPT-165686 END -->
         </div>`;
+
+        //${ Insider.browser.isMobile() ? '' : `<div class="${ alertIconWrapper }">${ alertIcon }</div>` } Icon Div
 
         /* OPT-161513 END */
         /* OPT-165686 START */
@@ -226,10 +245,54 @@
                 expires: Insider.dateHelper.addDay(1)
             });
             /* OPT-164192 END */
-
-            self.reset();
         });
     };
+
+    /* OPT-166022 START */
+    self.showAndHideCampaign = () => {
+        const { wrapper } = selectors;
+        const { hide } = classes;
+
+        if (!Insider.campaign.isControlGroup(variationId)) {
+            self.buildSpecialHTML();
+            self.buildCSS();
+            self.buildHTML();
+            self.setEvents();
+        }
+
+        Insider.campaign.custom.show(variationId);
+
+        self.checkHoverStatus();
+
+        setTimeout(() => {
+            if (!isHovered) {
+                Insider.dom(wrapper).addClass(hide);
+            } else {
+                const $wrapper = document.querySelector(wrapper);
+
+                $wrapper.addEventListener('mouseleave', Insider.fns.throttle(() => {
+                    Insider.dom(wrapper).addClass(hide);
+                }, 200));
+            }
+        }, 30000);
+
+        isDisplayed = true;
+    };
+
+    self.checkHoverStatus = () => {
+        const { wrapper } = selectors;
+
+        const $wrapper = document.querySelector(wrapper);
+
+        $wrapper.addEventListener('mouseenter', Insider.fns.throttle(() => {
+            isHovered = true;
+        }, 200));
+
+        $wrapper.addEventListener('mouseleave', Insider.fns.throttle(() => {
+            isHovered = false;
+        }, 200));
+    };
+    /* OPT-166022 END */
 
     self.init();
 })({});

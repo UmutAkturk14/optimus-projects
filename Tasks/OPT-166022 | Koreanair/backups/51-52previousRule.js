@@ -2,7 +2,7 @@
 ((self) => {
     'use strict';
 
-    const builderId = Insider.browser.isDesktop() ? 49 : 50;
+    const builderId = Insider.browser.isDesktop() ? 51 : 52;
     const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
 
     const classes = {
@@ -18,7 +18,7 @@
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
-        appendLocation: '.payment-widget__confirm'
+        appendLocation: '.payment-widget__confirm:last' /* OPT-166022 */
     });
 
     const config = {
@@ -26,7 +26,7 @@
         alertIcon: '<svg fill=none height=24 viewBox="0 0 24 24"width=24 xmlns=http://www.w3.org/2000/svg><g clip-path=url(#clip0_4859_7207)><path d="M3.75 12C3.75 7.45108 7.45194 3.75 12 3.75C16.5481 3.75 20.25 7.45108 20.25 12C20.25 16.5485 16.548 20.25 12 20.25C7.45197 20.25 3.75 16.5485 3.75 12Z"stroke=#00256C stroke-width=1.5 /><path d="M12.436 14.156H11.008L10.708 8.432H12.736L12.436 14.156ZM10.684 16.16C10.684 15.792 10.784 15.536 10.984 15.392C11.184 15.24 11.428 15.164 11.716 15.164C11.996 15.164 12.236 15.24 12.436 15.392C12.636 15.536 12.736 15.792 12.736 16.16C12.736 16.512 12.636 16.768 12.436 16.928C12.236 17.08 11.996 17.156 11.716 17.156C11.428 17.156 11.184 17.08 10.984 16.928C10.784 16.768 10.684 16.512 10.684 16.16Z"fill=#00256C /></g><defs><clipPath id=clip0_4859_7207><rect fill=white height=24 width=24 /></clipPath></defs></svg>',
         closeButtonIcon: '<svg fill=none height=16 viewBox="0 0 16 16"width=16 xmlns=http://www.w3.org/2000/svg><path d="M2.6665 2.66667L12.9279 13.3333"stroke=#00256C stroke-linecap=square stroke-width=1.5 /><path d="M12.9282 2.66667L2.66683 13.3333"stroke=#00256C stroke-linecap=square stroke-width=1.5 /></svg>',
         /* OPT-161513 END */
-        scrollLimit: (document?.documentElement?.scrollTop ?? 0) / 2, //Insider.dom('body').height() / 2
+        scrollLimit: (document?.documentElement?.scrollTop ?? 0) / 2,
         scrollEventName: `scroll.change:height:${ variationId }`,
         tooltip: {
             text: '회원으로 진행하고 마일리지 적립하세요!', /* OPT-161513 */
@@ -39,12 +39,12 @@
                 boxShadow: '0 4px 0 0 rgba(0, 0, 0, 0.1)'
             }
         },
-        storageName: 'ins-one-way-close-button-164192', /* OPT-164192 */
+        storageName: 'ins-round-trip-close-button-164192', /* OPT-164192 */
     };
 
     self.init = () => {
         if (variationId && self.checkIO() && !Insider.storage.localStorage.get(config.storageName)) { /* OPT-164192 */
-            //self.reset();
+            // self.reset();
             self.listenScroll();
         }
     };

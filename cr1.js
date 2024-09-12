@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Helpers - start
 /**
  * @param {boolean|undefined} status
@@ -1186,3 +1187,5 @@ Insider.eventManager.once(`pointerup.submit:button-${ camp.id }`, button,
         }
     });
 /* OPT-165946 END */
+=======
+>>>>>>> 2ff2ed6 (Last commit)

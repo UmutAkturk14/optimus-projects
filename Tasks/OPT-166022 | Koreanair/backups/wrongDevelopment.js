@@ -13,12 +13,18 @@
         closeButton: `ins-close-button-${ variationId }`,
         attributeDiv: `ins-attribute-div-${ variationId }`, /* OPT-165686 */
         goal: `sp-custom-${ variationId }-1`,
+        hide: `ins-custom-hidden-element-${ variationId }`, /* OPT-166022 */
+        positionRelative: `ins-custom-position-relative-${ variationId }`
     };
 
     const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
         createdSelector[key] = `.${ classes[key] }`, createdSelector
     ), {
-        appendLocation: '.payment-widget__confirm'
+        appendLocation: '.payment-widget__confirm:last', /* OPT-166022 */
+        /* OPT-166022 START */
+        flightItem: 'ke-revenue-flight-item',
+        flightPrice: '.flight-n__price-num'
+        /* OPT-166022 END */
     });
 
     const config = {
@@ -45,7 +51,8 @@
     self.init = () => {
         if (variationId && self.checkIO() && !Insider.storage.localStorage.get(config.storageName)) { /* OPT-164192 */
             //self.reset();
-            self.listenScroll();
+            // self.listenScroll();
+            self.checkCampaignEligibility();
         }
     };
 
@@ -60,9 +67,10 @@
     };
 
     self.reset = () => {
-        const { style, wrapper } = selectors;
+        const { style, wrapper, attributeDiv } = selectors;
 
-        Insider.dom(`${ style }, ${ wrapper }`).remove();
+        Insider.dom(`${ style }, ${ wrapper }, ${ attributeDiv }`).remove();
+        debugger; 
     };
 
     self.listenScroll = () => {
@@ -78,24 +86,43 @@
             }
         }
 
-        Insider.campaign.custom.show(variationId);
+        self.showAndHideCampaign();
     };
+
+    /* OPT-166022 START */
+    self.checkCampaignEligibility = () => {
+        const { flightItem, flightPrice } = selectors;
+        const { positionRelative } = classes;
+
+        Insider.eventManager.once(`click.track:flight:item:clicks:${ variationId }`, flightItem, (event) => {
+            const $flight = Insider.dom(event.target);
+
+            if ($flight.find(flightPrice).exists()) {
+                $flight.closest(flightItem).addClass(positionRelative);
+                // $flight.addClass(newClass); // Gonna use this for 
+                // debugger;
+                self.showAndHideCampaign();
+            }
+        });
+    };
+    /* OPT-166022 END */
 
     /* OPT-165686 START */
     self.buildSpecialHTML = () => {
         const { attributeDiv, goal } = classes;
-        const { attributeDiv: attribute, appendLocation } = selectors;
+        const { attributeDiv: attribute, appendLocation, positionRelative } = selectors;
 
         const outerHTML = `<div class="${ attributeDiv } ${ goal }" aria-live="polite" role="status"></div>`;
 
         if (!Insider.dom(attribute).exists()) {
-            Insider.dom(appendLocation).before(outerHTML);
+            Insider.dom(positionRelative).before(outerHTML);
         }
     };
     /* OPT-165686 END */
 
     self.buildCSS = () => {
-        const { style, tooltipContainer, wrapper, closeButton, alertIconWrapper } = selectors; /* OPT-161513 */
+        const { style, tooltipContainer, wrapper, closeButton, alertIconWrapper, hide,
+            positionRelative } = selectors; /* OPT-166022 */
         const { fontColor, fontSize, fontWeight, fontFamily, backgroundColor, boxShadow } = config.tooltip.design;
 
         const customStyle =
@@ -107,11 +134,11 @@
         /* OPT-161513 END */
         ${ wrapper }  {
             position: relative;
-            bottom: 96px;
+            bottom: -90px; /* */
             /* OPT-163185 START */
             right: 50%;
             transform: translateX(50%);
-            width: auto;
+            width: 300px !important; /* */
             /* OPT-163185 END */
             position: absolute;
             /* OPT-161513 START */
@@ -153,6 +180,14 @@
             border: none;
             /* OPT-165686 END */
         }
+        /* OPT-166022 START */
+        ${ hide } {
+            display: none !important;
+        }
+        ${ positionRelative } {
+            position: relative !important;
+        }
+        /* OPT-166022 END */
         @media only screen and (max-width: 1050px) {
             ${ wrapper } {
                 /* OPT-163185 START */
@@ -210,7 +245,7 @@
         /* OPT-161513 END */
         /* OPT-165686 START */
         if (!Insider.dom(wrapper).exists()) {
-            Insider.dom(selectors.attributeDiv).append(outerHTML);
+            Insider.dom(selectors.positionRelative).append(outerHTML);
         }
         /* OPT-165686 END*/
     };
@@ -226,10 +261,31 @@
                 expires: Insider.dateHelper.addDay(1)
             });
             /* OPT-164192 END */
-
-            self.reset();
         });
     };
+
+    /* OPT-166022 START */
+    self.showAndHideCampaign = () => {
+        const { wrapper, attributeDiv } = selectors;
+        const { hide } = classes;
+
+        if (!Insider.campaign.isControlGroup(variationId)) {
+            self.reset();
+            self.buildSpecialHTML();
+            self.buildCSS();
+            self.buildHTML();
+            self.setEvents();
+        }
+
+        Insider.campaign.custom.show(variationId);
+
+        setTimeout(() => {
+            Insider.dom(wrapper).remove();
+
+            Insider.logger.log('Hiding the campaign...');
+        }, 3000);
+    };
+    /* OPT-166022 END */
 
     self.init();
 })({});

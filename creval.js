@@ -1,135 +1,120 @@
-/* OPT-165817 START */
+/* OPT-152000 START */
+(() => {
+    const userId = Insider.getUserId();
+    const attributesStorageName = 'ins-attributes-152000';
+
+    if (Insider.systemRules.call('isUserLoggedIn') &&
+        Insider.storage.localStorage.get(attributesStorageName)?.[0] !== userId) {
+        const payload = {
+            partner_name: Insider.partner.name,
+            insider_id: userId,
+            attributes: ['c_bigcommerce_customer_group']
+        };
+
+        Insider.request.post({
+            url: 'https://cronus.useinsider.com/api/inone/get-contact-profile',
+            data: payload,
+            parse: true,
+            success(response) {
+                const attributes = response?.data?.attributes;
+
+                if (attributes) {
+                    Insider.storage.localStorage.set({
+                        name: attributesStorageName,
+                        value: [userId, attributes],
+                        expires: 30,
+                    });
+                }
+            },
+            error(err) {
+                Insider.logger.log(err);
+            }
+        });
+    }
+})({});
+/* OPT-152000 END */
+
+/* OPT-169758 START */
 ((self) => {
-    'use strict';
-
-    const isDesktop = Insider.browser.isDesktop();
-    const builderId = isDesktop ? 426 : 427;
-    const variationId = Insider.campaign.userSegment.getActiveVariationByBuilderId(builderId);
-
-    const campaignConfiguration = {
-        initialText: 'Videolu Ürün',
-    };
-
-    const classes = {
-        style: `ins-custom-style-${ variationId }`,
-        wrapper: `ins-custom-wrapper-${ variationId }`,
-        goal: `sp-custom-${ variationId }-1`,
-        campaignText: `ins-custom-camp-text-${ variationId }`,
-        youtubeIcon: `ins-custom-social-youtube-${ variationId }`,
-    };
-
-    const selectors = Insider.fns.keys(classes).reduce((createdSelector, key) => (
-        createdSelector[key] = `.${ classes[key] }`, createdSelector
-    ), {
-        appendLocation: '#frm-addbasket',
-    });
-
-    const productList = {
-        194331: 'https://youtube.com/shorts/Fh6s0Eg9mT8?si=affcB4RvUqVISG6K'
-    };
+    const storageName = 'ins-average-order-purchase-169758';
 
     self.init = () => {
-        if (variationId && Insider.systemRules.call('isOnProductPage') &&
-        Insider.fns.has(productList, Insider.systemRules.getCurrentProduct().id)) {
-            if (!Insider.campaign.isControlGroup(variationId)) {
-                self.reset();
-                self.buildCSS();
-                self.buildHTML();
+        if (Insider.systemRules.call('isUserLoggedIn') && Insider.storage.localStorage.get(storageName)) {
+            self.getAverageWithUserId();
+        } else {
+            self.getAverageWithAjaxResponse();
+        }
+    };
+
+    self.getAverageWithUserId = () => {
+        const payload = {
+            partner_name: Insider.partner.name,
+            insider_id: Insider.getUserId(),
+            events: {
+                confirmation_page_view: {
+                    params: ['usp', 'e_guid']
+                }
             }
+        };
 
-            Insider.campaign.custom.show(variationId);
-        }
+        self.sendContactRequest(payload);
     };
 
-    self.reset = () => {
-        const { style, wrapper } = selectors;
+    self.getAverageWithAjaxResponse = () => {
+        Insider.utils.opt.ajaxListener((url, ajaxResponse, method) => {
+            if (Insider.fns.has(url, '/api/identity/v1/get') && method === 'POST') {
+                const payload = {
+                    partner_name: Insider.partner.name,
+                    insider_id: ajaxResponse,
+                    events: {
+                        confirmation_page_view: {
+                            params: ['usp', 'e_guid']
+                        }
+                    }
+                };
 
-        Insider.dom(`${ style }, ${ wrapper }`).remove();
+                self.sendContactRequest(payload);
+            }
+        });
     };
 
-    self.buildCSS = () => {
-        const { wrapper, campaignText, youtubeIcon } = selectors;
+    self.sendContactRequest = (payload) => {
+        Insider.request.post({
+            url: 'https://cronus.useinsider.com/api/inone/get-contact-profile',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: Insider.fns.stringify(payload),
+            parse: true,
+            success: (response) => {
+                const purchaseEvents = response?.data?.events?.confirmation_page_view ?? [];
 
-        const customStyle =
-        `${ wrapper } {
-            align-items: center;
-            background-color: #fff;
-            border-color: #383838;
-            border-radius: 30px;
-            border-style: solid;
-            border-width: 0.8px;
-            border-image-outset: 0;
-            border-image-repeat: stretch;
-            border-image-slice: 100%;
-            border-image-source: none;
-            border-image-width: 1;
-            box-sizing: border-box;
-            cursor: pointer;
-            display: flex;
-            font-size: 16px;
-            font-stretch: 100%;
-            font-weight: 400;
-            justify-content: center;
-            line-height: 20.8px;
-            margin: ${ isDesktop ? '-20px auto 0 40px' : '-20px auto 0 auto' };
-            padding: 3px 10px;
-            text-align: left;
-            width: 153px;
-            height: 38px;
-        }
-        ${ youtubeIcon } {
-            position: relative;
-            display: inline-block;
-            color: red;
-            width: 34px;
-            height: 34px;
-            font-size: 34px;
-            text-align: left;
-        }
-        ${ youtubeIcon }::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 75%;
-            height: 75%;
-            background-image: url('https://image.useinsider.com/greyder/defaultImageLibrary/youtube-1721814373.png');
-            background-size: cover;
-            background-position: center;
-            z-index: 1;
-            transform: translate(-50%, -50%);
-        }
-        ${ campaignText } {
-            box-sizing: border-box;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            font-size: 11px;
-            font-stretch: 100%;
-            font-weight: 400;
-            line-height: 14.3px;
-            padding-left: 10px;
-        }`;
+                const result = purchaseEvents.reduce((accumulator, purchase) => {
+                    if (!accumulator[purchase.e_guid]) {
+                        accumulator[purchase.e_guid] = { e_guid: purchase.e_guid, usp: 0 };
+                    }
+                    accumulator[purchase.e_guid].usp += purchase.usp;
 
-        Insider.dom('<style>').addClass(classes.style).html(customStyle).appendTo('head');
-    };
+                    return accumulator;
+                }, {});
 
-    self.buildHTML = () => {
-        const { wrapper, goal, campaignText, youtubeIcon } = classes;
-        const { appendLocation } = selectors;
-        const { initialText } = campaignConfiguration;
+                const total = Insider.fns.objectValues(result).reduce((sum, purchase) => (sum + purchase.usp), 0);
+                const averageOrderPurchase =  Number((total / Insider.fns.keys(result).length).toFixed(2)) || 0;
 
-        const videoUrl = productList[Insider.systemRules.call('getCurrentProduct').id];
-
-        const outerHtml =
-        `<a href="${ videoUrl }" class="${ wrapper } ${ goal }">
-            <span class="${ youtubeIcon }"></span>
-            <span class="${ campaignText }">${ initialText }</span>
-        </a>`;
-
-        Insider.dom(appendLocation).parent().before(outerHtml);
+                if (averageOrderPurchase) {
+                    Insider.storage.localStorage.set({
+                        name: storageName,
+                        value: averageOrderPurchase,
+                        expires: Insider.dateHelper.addMinutes(30)
+                    });
+                }
+            },
+            error: (error) => {
+                Insider.logger.log(error);
+            }
+        });
     };
 
     self.init();
 })({});
-/* OPT-165817 END */
+/* OPT-169758 END */
