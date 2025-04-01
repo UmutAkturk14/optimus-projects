@@ -1,4 +1,8 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> cf379e5 (Uploading the task files.)
 // Helpers - start
 /**
  * @param {boolean|undefined} status
@@ -1187,5 +1191,9 @@ Insider.eventManager.once(`pointerup.submit:button-${ camp.id }`, button,
         }
     });
 /* OPT-165946 END */
+<<<<<<< HEAD
 =======
 >>>>>>> 2ff2ed6 (Last commit)
+=======
+>>>>>>> 5c26471 (New tasks...)
+>>>>>>> cf379e5 (Uploading the task files.)
